@@ -1,0 +1,6 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Wolfenstein 3D (shareware) (SDL port)
+Type=Application
+Exec=sdlwolf3d
+Categories=Application;Game;

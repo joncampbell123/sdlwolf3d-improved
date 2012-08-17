@@ -1,0 +1,6 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Wolfenstein 3D Spear of Destiny (shareware) (SDL port)
+Type=Application
+Exec=sdlspeard
+Categories=Application;Game;

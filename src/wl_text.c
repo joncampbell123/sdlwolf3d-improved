@@ -67,7 +67,7 @@ static boolean layoutdone;
 
 void RipToEOL()
 {
-	while (*text++ != '\n')		// scan to end of line
+	while (*text++ != '\n')		/* scan to end of line */
 	;
 }
 
@@ -85,16 +85,16 @@ int ParseNumber()
 	char ch;
 	char num[80], *numptr;
 
-//
+/*
 // scan until a number is found
-//
+*/
 	ch = *text;
 	while (ch < '0' || ch >'9')
 		ch = *++text;
 
-//
+/*
 // copy the number out
-//
+*/
 	numptr = num;
 	do
 	{
@@ -153,20 +153,20 @@ void TimedPicCommand()
 {
 	ParseTimedCommand();
 
-//
+/*
 // update the screen, and wait for time delay
-//
+*/
 	VW_UpdateScreen();
 
-//
+/*
 // wait for time
-//
+*/
 	set_TimeCount(0);
 	while (get_TimeCount() < picdelay) ;
 
-//
+/*
 // draw pic
-//
+*/
 	VWB_DrawPic(picx&~7, picy, picnum);
 }
 
@@ -194,16 +194,16 @@ void HandleCommand()
 		VW_Bar(picx,picy,picwidth,picheight,BACKCOLOR);
 		RipToEOL();
 		break;
-	case ';':		// comment
+	case ';':		/* comment */
 		RipToEOL();
 		break;
-	case 'P':		// ^P is start of next page, ^E is end of file
+	case 'P':		/* ^P is start of next page, ^E is end of file */
 	case 'E':
 		layoutdone = true;
-		text--;    	// back up to the '^'
+		text--;    	/* back up to the '^' */
 		break;
 
-	case 'C':		// ^c<hex digit> changes text color
+	case 'C':		/* ^c<hex digit> changes text color */
 		i = toupper(*++text);
 		if (i>='0' && i<='9')
 			fontcolor = i-'0';
@@ -229,27 +229,27 @@ void HandleCommand()
 		rowon = (py-TOPMARGIN)/FONTHEIGHT;
 		py = TOPMARGIN+rowon*FONTHEIGHT;
 		px=ParseNumber();
-		while (*text++ != '\n')		// scan to end of line
+		while (*text++ != '\n')		/* scan to end of line */
 		;
 		break;
 
-	case 'T':		// ^Tyyy,xxx,ppp,ttt waits ttt tics, then draws pic
+	case 'T':		/* ^Tyyy,xxx,ppp,ttt waits ttt tics, then draws pic */
 		TimedPicCommand();
 		break;
 
-	case 'G':		// ^Gyyy,xxx,ppp draws graphic
+	case 'G':		/* ^Gyyy,xxx,ppp draws graphic */
 		ParsePicCommand ();
 		VWB_DrawPic (picx&~7,picy,picnum);
 		picwidth = pictable[picnum-STARTPICS].width;
 		picheight = pictable[picnum-STARTPICS].height;
-		//
+		/*
 		// adjust margins
-		//
+		*/
 		picmid = picx + picwidth/2;
 		if (picmid > SCREENMID)
-			margin = picx-PICMARGIN;			// new right margin
+			margin = picx-PICMARGIN;			/* new right margin */
 		else
-			margin = picx+picwidth+PICMARGIN;	// new left margin
+			margin = picx+picwidth+PICMARGIN;	/* new left margin */
 
 		top = (picy-TOPMARGIN)/FONTHEIGHT;
 		if (top<0)
@@ -264,9 +264,9 @@ void HandleCommand()
 			else
 				leftmargin[i] = margin;
 
-		//
+		/*
 		// adjust this line if needed
-		//
+		*/
 		if (px < leftmargin[rowon])
 			px = leftmargin[rowon];
 		break;
@@ -288,9 +288,9 @@ void NewLine()
 
 	if (++rowon == TEXTROWS)
 	{
-	//
+	/*
 	// overflowed the page, so skip until next page break
-	//
+	*/
 		layoutdone = true;
 		do
 		{
@@ -326,7 +326,7 @@ void HandleCtrls()
 {
 	char	ch;
 
-	ch = *text++;			// get the character and advance
+	ch = *text++;			/* get the character and advance */
 
 	if (ch == '\n')
 	{
@@ -351,9 +351,9 @@ void HandleWord()
 	int wordindex;
 	word wwidth, wheight, newpos;
 
-	//
+	/*
 	// copy the next word into words[]
-	//
+	*/
 	words[0] = *text++;
 	wordindex = 1;
 	while (*text>32)
@@ -362,7 +362,7 @@ void HandleWord()
 		if (++wordindex == WORDLIMIT)
 			Quit ("PageLayout: Word limit exceeded");
 	}
-	words[wordindex] = 0;		// stick a null at end for C
+	words[wordindex] = 0;		/* stick a null at end for C */
 
 	/* see if it fits on this line */
 	VW_MeasurePropString(words, &wwidth, &wheight);
@@ -371,19 +371,19 @@ void HandleWord()
 	{
 		NewLine ();
 		if (layoutdone)
-			return;		// overflowed page
+			return;		/* overflowed page */
 	}
 
-	//
+	/*
 	// print it
-	//
+	*/
 	newpos = px+wwidth;
 	VW_DrawPropString(words);
 	px = newpos;
 
-	//
+	/*
 	// suck up any extra spaces
-	//
+	*/
 	while (*text == ' ')
 	{
 		px += SPACEWIDTH;
@@ -411,9 +411,9 @@ void PageLayout(boolean shownumber)
 
 	fontcolor = 0;
 
-//
+/*
 // clear the screen
-//
+*/
 	VW_Bar(0,0,320,200,BACKCOLOR);
 	VWB_DrawPic(0,0,H_TOPWINDOWPIC);
 	VWB_DrawPic(0,8,H_LEFTWINDOWPIC);
@@ -432,9 +432,9 @@ void PageLayout(boolean shownumber)
 	rowon = 0;
 	layoutdone = false;
 
-//
+/*
 // make sure we are starting layout text (^P first command)
-//
+*/
 	while (*text <= 32)
 		text++;
 
@@ -445,9 +445,9 @@ void PageLayout(boolean shownumber)
 	;
 
 
-//
+/*
 // process text stream
-//
+*/
 	do
 	{
 		ch = *text;
@@ -479,7 +479,7 @@ void PageLayout(boolean shownumber)
 		px = 213;
 		itoa (numpages,str2,10);
 		strcat (str,str2);
-		fontcolor = 0x4f; 			   //12^BACKCOLOR;
+		fontcolor = 0x4f; 			   /*12^BACKCOLOR;*/
 
 		VW_DrawPropString (str);
 	}
@@ -487,7 +487,7 @@ void PageLayout(boolean shownumber)
 	fontcolor = oldfontcolor;
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 =====================
@@ -511,7 +511,7 @@ void BackPage()
 }
 
 
-//===========================================================================
+/*===========================================================================*/
 
 
 /*
@@ -538,9 +538,9 @@ void CacheLayoutGraphics()
 		if (*text == '^')
 		{
 			ch = toupper(*++text);
-			if (ch == 'P')		// start of a page
+			if (ch == 'P')		/* start of a page */
 				numpages++;
-			if (ch == 'E')		// end of file, so load graphics and return
+			if (ch == 'E')		/* end of file, so load graphics and return */
 			{
 				CA_CacheGrChunk(H_TOPWINDOWPIC);
 				CA_CacheGrChunk(H_LEFTWINDOWPIC);
@@ -550,12 +550,12 @@ void CacheLayoutGraphics()
 				text = textstart;
 				return;
 			}
-			if (ch == 'G')		// draw graphic command, so mark graphics
+			if (ch == 'G')		/* draw graphic command, so mark graphics */
 			{
 				ParsePicCommand ();
 				CA_CacheGrChunk(picnum);
 			}
-			if (ch == 'T')		// timed draw graphic command, so mark graphics
+			if (ch == 'T')		/* timed draw graphic command, so mark graphics */
 			{
 				ParseTimedCommand();
 				CA_CacheGrChunk(picnum);
@@ -626,7 +626,7 @@ void ShowArticle(const char *article)
 		case sc_Enter:
 		case sc_DownArrow:
 		case sc_PgDn:
-		case sc_RightArrow:		// the text already points at next page
+		case sc_RightArrow:		/* the text already points at next page */
 			if (pagenum<numpages)
 			{
 				newpage = true;
@@ -674,9 +674,9 @@ void HelpScreens()
 	FreeMusic();
 }
 
-//
+/*
 // END ARTICLES
-//
+*/
 void EndText()
 {
 	int artnum;
@@ -696,7 +696,7 @@ void EndText()
 	SETFONTCOLOR(0,15);
 	IN_ClearKeysDown();
 
-	IN_GetMouseDelta(NULL, NULL); // Clear accumulated mouse movement
+	IN_GetMouseDelta(NULL, NULL); /* Clear accumulated mouse movement */
 	
 	FreeMusic();
 }

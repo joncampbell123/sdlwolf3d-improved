@@ -96,70 +96,70 @@ static void put_dos2ansi(byte attrib)
 {
 	byte fore,back,blink=0,intens=0;
 	
-	fore = attrib&15;	// bits 0-3
-	back = attrib&112; // bits 4-6
-       	blink = attrib&128; // bit 7
+	fore = attrib&15;	/* bits 0-3 */
+	back = attrib&112; /* bits 4-6 */
+       	blink = attrib&128; /* bit 7 */
 	
-	// Fix background, blink is either on or off.
+	/* Fix background, blink is either on or off. */
 	back = back>>4;
 
-	// Fix foreground
+	/* Fix foreground */
 	if (fore > 7) {
 		intens = 1;
 		fore-=8;
 	}
 
-	// Convert fore/back
+	/* Convert fore/back */
 	switch (fore) {
-		case 0: // BLACK
+		case 0: /* BLACK */
 			fore=30;
 			break;
-		case 1: // BLUE
+		case 1: /* BLUE */
 			fore=34;
 			break;
-		case 2: // GREEN
+		case 2: /* GREEN */
 			fore=32;
 			break;
-		case 3: // CYAN
+		case 3: /* CYAN */
 			fore=36;
 			break;
-		case 4: // RED
+		case 4: /* RED */
 			fore=31;
 			break;
-		case 5: // Magenta
+		case 5: /* Magenta */
 			fore=35;
 			break;
-		case 6: // BROWN(yellow)
+		case 6: /* BROWN(yellow) */
 			fore=33;
 			break;
-		case 7: //GRAy
+		case 7: /*GRAy */
 			fore=37;
 			break;
 	}
 			
 	switch (back) {
-		case 0: // BLACK
+		case 0: /* BLACK */
 			back=40;
 			break;
-		case 1: // BLUE
+		case 1: /* BLUE */
 			back=44;
 			break;
-		case 2: // GREEN
+		case 2: /* GREEN */
 			back=42;
 			break;
-		case 3: // CYAN
+		case 3: /* CYAN */
 			back=46;
 			break;
-		case 4: // RED
+		case 4: /* RED */
 			back=41;
 			break;
-		case 5: // Magenta
+		case 5: /* Magenta */
 			back=45;
 			break;
-		case 6: // BROWN(yellow)
+		case 6: /* BROWN(yellow) */
 			back=43;
 			break;
-		case 7: //GRAy
+		case 7: /*GRAy */
 			back=47;
 			break;
 	}
@@ -173,9 +173,9 @@ void DisplayTextSplash(const byte *text, int l)
 {
 	int i, x;
 	
-	//printf("%02X %02X %02X %02X\n", text[0], text[1], text[2], text[3]);
+	/*printf("%02X %02X %02X %02X\n", text[0], text[1], text[2], text[3]); */
 	text += 4;
-	//printf("%02X %02X %02X %02X\n", text[0], text[1], text[2], text[3]);
+	/*printf("%02X %02X %02X %02X\n", text[0], text[1], text[2], text[3]); */
 	text += 2;
 	
 	for (x = 0; x < l; x++) {

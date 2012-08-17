@@ -20,12 +20,12 @@
 =============================================================================
 */
 
-//
+/*
 // player state info
-//
+*/
 long		thrustspeed;
 
-unsigned	plux, pluy;	// player coordinates scaled to unsigned
+unsigned	plux, pluy;	/* player coordinates scaled to unsigned */
 
 int		anglefrac;
 int		gotgatgun;
@@ -43,7 +43,7 @@ objtype		*LastAttacker;
 
 static const struct atkinf
 {
-	signed char tics, attack, frame; 	// attack is 1 for gun, 2 for knife
+	signed char tics, attack, frame; 	/* attack is 1 for gun, 2 for knife */
 } attackinfo[4][14] =
 {
 { {6,0,1},{6,2,2},{6,0,3},{6,-1,4} },
@@ -78,7 +78,7 @@ void CheckWeaponChange()
 {
 	int i;
 
-	if (!gamestate.ammo)		// must use knife with no ammo
+	if (!gamestate.ammo)		/* must use knife with no ammo */
 		return;
 
 	for (i = wp_knife; i <= gamestate.bestweapon; i++)
@@ -112,33 +112,33 @@ void ControlMovement(objtype *ob)
 	int		angleunits;
 
 	thrustspeed = 0;
-//
+/*
 // side to side move
-//
+*/
 	if (buttonstate[bt_strafe])
 	{
-	//
+	/*
 	// strafing
 	//
-	//
+	*/
 		if (controlx > 0)
 		{
 			angle = ob->angle - ANGLES/4;
 			if (angle < 0)
 				angle += ANGLES;
-			Thrust (angle,controlx*MOVESCALE);	// move to left
+			Thrust (angle,controlx*MOVESCALE);	/* move to left */
 		}
 		else if (controlx < 0)
 		{
 			angle = ob->angle + ANGLES/4;
 			if (angle >= ANGLES)
 				angle -= ANGLES;
-			Thrust (angle,-controlx*MOVESCALE);	// move to right
+			Thrust (angle,-controlx*MOVESCALE);	/* move to right */
 		}
 	} else {
-	//
+	/*
 	// not strafing
-	//
+	*/
 		anglefrac += controlx;
 		angleunits = anglefrac/ANGLESCALE;
 		anglefrac -= angleunits*ANGLESCALE;
@@ -151,22 +151,22 @@ void ControlMovement(objtype *ob)
 
 	}
 
-//
+/*
 // forward/backwards move
-//
+*/
 	if (controly < 0)
 	{
-		Thrust (ob->angle,-controly*MOVESCALE);	// move forwards
+		Thrust (ob->angle,-controly*MOVESCALE);	/* move forwards */
 	}
 	else if (controly > 0)
 	{
 		angle = ob->angle + ANGLES/2;
 		if (angle >= ANGLES)
 			angle -= ANGLES;
-		Thrust (angle,controly*BACKMOVESCALE);		// move backwards
+		Thrust (angle,controly*BACKMOVESCALE);		/* move backwards */
 	}
 
-	if (gamestate.victoryflag)		// watching the BJ actor
+	if (gamestate.victoryflag)		/* watching the BJ actor */
 		return;
 }
 
@@ -335,9 +335,9 @@ void TakeDamage(int points, objtype *attacker)
 	DrawHealth();
 	DrawFace();
 
-	//
+	/*
 	// MAKE BJ'S EYES BUG IF MAJOR DAMAGE!
-	//
+	*/
 	#ifdef SPEAR
 	if (points > 30 && gamestate.health!=0 && !godmode)
 	{
@@ -364,12 +364,12 @@ void HealSelf(int points)
 		gamestate.health = 100;
 
 	DrawHealth();
-	gotgatgun = 0;	// JR
+	gotgatgun = 0;	/* JR */
 	DrawFace();
 }
 
 
-//===========================================================================
+/*===========================================================================*/
 
 
 /*
@@ -390,7 +390,7 @@ void DrawLevel()
 	LatchNumber(2,16,2,gamestate.mapon+1);
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 
 /*
@@ -423,7 +423,7 @@ void GiveExtraMan()
 	SD_PlaySound(BONUS1UPSND);
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ===============
@@ -457,7 +457,7 @@ void GivePoints(long points)
 	DrawScore();
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ==================
@@ -512,7 +512,7 @@ void GiveWeapon(int weapon)
 	DrawWeapon();
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ===============
@@ -537,7 +537,7 @@ void DrawAmmo()
 
 void GiveAmmo(int ammo)
 {
-	if (!gamestate.ammo)				// knife was out
+	if (!gamestate.ammo)				/* knife was out */
 	{
 		if (!gamestate.attackframe)
 		{
@@ -551,7 +551,7 @@ void GiveAmmo(int ammo)
 	DrawAmmo();
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ==================
@@ -702,7 +702,7 @@ void GetBonus (statobj_t *check)
 	}
 
 	StartBonusFlash ();
-	check->shapenum = -1;			// remove from list
+	check->shapenum = -1;			/* remove from list */
 }
 
 /*
@@ -727,9 +727,9 @@ boolean TryMove(objtype *ob)
 	xh = (ob->x+PLAYERSIZE) >>TILESHIFT;
 	yh = (ob->y+PLAYERSIZE) >>TILESHIFT;
 
-//
+/*
 // check for solid walls
-//
+*/
 	for (y=yl;y<=yh;y++)
 		for (x=xl;x<=xh;x++)
 		{
@@ -737,9 +737,9 @@ boolean TryMove(objtype *ob)
 				return false;
 		}
 
-//
+/*
 // check for actors
-//
+*/
 	if (yl>0)
 		yl--;
 	if (yh<MAPSIZE-1)
@@ -795,7 +795,7 @@ void ClipMove(objtype *ob, long xmove, long ymove)
 	if (noclip && ob->x > 2*TILEGLOBAL && ob->y > 2*TILEGLOBAL &&
 	ob->x < (((long)(mapwidth-1))<<TILESHIFT)
 	&& ob->y < (((long)(mapheight-1))<<TILESHIFT) )
-		return;		// walk through walls
+		return;		/* walk through walls */
 
 	if (!SD_SoundPlaying())
 		SD_PlaySound (HITWALLSND);
@@ -814,7 +814,7 @@ void ClipMove(objtype *ob, long xmove, long ymove)
 	ob->y = basey;
 }
 
-//==========================================================================
+/*==========================================================================*/
 
 /*
 ===================
@@ -846,17 +846,17 @@ void Thrust(int angle, long speed)
 	unsigned offset;
 
 #ifdef SPEAR
-	//
+	/*
 	// ZERO FUNNY COUNTER IF MOVED!
-	//
+	*/
 	if (speed)
 		funnyticount = 0;
 #endif
 
 	thrustspeed += speed;
-//
+/*
 // moving bounds speed
-//
+*/
 	if (speed >= MINDIST*2)
 		speed = MINDIST*2-1;
 
@@ -865,7 +865,7 @@ void Thrust(int angle, long speed)
 
 	ClipMove(player,xmove,ymove);
 
-	player->tilex = player->x >> TILESHIFT;		// scale to tile values
+	player->tilex = player->x >> TILESHIFT;		/* scale to tile values */
 	player->tiley = player->y >> TILESHIFT;
 
 	offset = farmapylookup[player->tiley]+player->tilex;
@@ -908,7 +908,7 @@ void Cmd_Fire()
 		attackinfo[gamestate.weapon][gamestate.attackframe].frame;
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ===============
@@ -923,9 +923,9 @@ void Cmd_Use()
 	int checkx, checky, doornum, dir;
 	boolean elevatorok;
 
-//
+/*
 // find which cardinal direction the player is facing
-//
+*/
 	if (player->angle < ANGLES/8 || player->angle > 7*ANGLES/8)
 	{
 		checkx = player->tilex + 1;
@@ -958,21 +958,21 @@ void Cmd_Use()
 	doornum = tilemap[checkx][checky];
 	if (*(mapsegs[1]+farmapylookup[checky]+checkx) == PUSHABLETILE)
 	{
-	//
+	/*
 	// pushable wall
-	//
+	*/
 
 		PushWall (checkx,checky,dir);
 		return;
 	}
 	if (!buttonheld[bt_use] && doornum == ELEVATORTILE && elevatorok)
 	{
-	//
+	/*
 	// use elevator
-	//
+	*/
 		buttonheld[bt_use] = true;
 
-		tilemap[checkx][checky]++;		// flip switch
+		tilemap[checkx][checky]++;		/* flip switch */
 		if (*(mapsegs[0]+farmapylookup[player->tiley]+player->tilex) == ALTELEVATORTILE)
 			playstate = ex_secretlevel;
 		else
@@ -1023,13 +1023,13 @@ void SpawnPlayer (int tilex, int tiley, int dir)
 	if (player->angle<0)
 		player->angle += ANGLES;
 	player->flags = FL_NEVERMARK;
-	Thrust (0,0);				// set some variables
+	Thrust (0,0);				/* set some variables */
 
 	InitAreas();
 }
 
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ===============
@@ -1047,7 +1047,7 @@ void KnifeAttack (objtype *ob)
 	long	dist;
 
 	SD_PlaySound (ATKKNIFESND);
-// actually fire
+/* actually fire */
 	dist = 0x7fffffff;
 	closest = NULL;
 	for (check=ob->next ; check ; check=check->next)
@@ -1065,12 +1065,12 @@ void KnifeAttack (objtype *ob)
 
 	if (!closest || dist> 0x18000l)
 	{
-	// missed
+	/* missed */
 
 		return;
 	}
 
-// hit something
+/* hit something */
 	DamageActor(closest, US_RndT() >> 4);
 }
 
@@ -1100,9 +1100,9 @@ void GunAttack(objtype *ob)
 
 	madenoise = true;
 
-//
+/*
 // find potential targets
-//
+*/
 	viewdist = 0x7fffffffl;
 	closest = NULL;
 
@@ -1124,19 +1124,19 @@ void GunAttack(objtype *ob)
 			}
 
 		if (closest == oldclosest)
-			return;		// no more targets, all missed
+			return;		/* no more targets, all missed */
 
-	//
+	/*
 	// trace a line from player to enemey
-	//
+	*/
 		if (CheckLine(closest))
 			break;
 
 	}
 
-//
+/*
 // hit something
-//
+*/
 	dx = abs(closest->tilex - player->tilex);
 	dy = abs(closest->tiley - player->tiley);
 	dist = dx>dy ? dx:dy;
@@ -1147,7 +1147,7 @@ void GunAttack(objtype *ob)
 		damage = US_RndT() / 6;
 	else
 	{
-		if ( (US_RndT() / 12) < dist)		// missed
+		if ( (US_RndT() / 12) < dist)		/* missed */
 			return;
 		damage = US_RndT() / 6;
 	}
@@ -1155,7 +1155,7 @@ void GunAttack(objtype *ob)
 	DamageActor (closest,damage);
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ===============
@@ -1193,7 +1193,7 @@ void VictorySpin()
 }
 
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ===============
@@ -1209,7 +1209,7 @@ void T_Attack(objtype *ob)
 
 	UpdateFace();
 
-	if (gamestate.victoryflag)		// watching the BJ actor
+	if (gamestate.victoryflag)		/* watching the BJ actor */
 	{
 		VictorySpin();
 		return;
@@ -1222,17 +1222,17 @@ void T_Attack(objtype *ob)
 		buttonstate[bt_attack] = false;
 
 	ControlMovement(ob);
-	if (gamestate.victoryflag)		// watching the BJ actor
+	if (gamestate.victoryflag)		/* watching the BJ actor */
 		return;
 
-	plux = player->x >> UNSIGNEDSHIFT;			// scale to fit in unsigned
+	plux = player->x >> UNSIGNEDSHIFT;			/* scale to fit in unsigned*/
 	pluy = player->y >> UNSIGNEDSHIFT;
-	player->tilex = player->x >> TILESHIFT;		// scale to tile values
+	player->tilex = player->x >> TILESHIFT;		/* scale to tile values*/
 	player->tiley = player->y >> TILESHIFT;
 
-//
+/*
 // change frame and fire
-//
+*/
 	gamestate.attackcount -= tics;
 	while (gamestate.attackcount <= 0)
 	{
@@ -1264,7 +1264,7 @@ void T_Attack(objtype *ob)
 				gamestate.attackframe -= 2;
 		case 1:
 			if (!gamestate.ammo)
-			{	// can only happen with chain gun
+			{	/* can only happen with chain gun */
 				gamestate.attackframe++;
 				break;
 			}
@@ -1301,7 +1301,7 @@ void T_Attack(objtype *ob)
 
 void T_Player(objtype *ob)
 {
-	if (gamestate.victoryflag)		// watching the BJ actor
+	if (gamestate.victoryflag)		/* watching the BJ actor */
 	{
 		VictorySpin();
 		return;
@@ -1317,11 +1317,11 @@ void T_Player(objtype *ob)
 		Cmd_Fire();
 
 	ControlMovement(ob);
-	if (gamestate.victoryflag)		// watching the BJ actor
+	if (gamestate.victoryflag)		/* watching the BJ actor */
 		return;
 
-	plux = player->x >> UNSIGNEDSHIFT;			// scale to fit in unsigned
+	plux = player->x >> UNSIGNEDSHIFT;			/* scale to fit in unsigned */
 	pluy = player->y >> UNSIGNEDSHIFT;
-	player->tilex = player->x >> TILESHIFT;		// scale to tile values
+	player->tilex = player->x >> TILESHIFT;		/* scale to tile values */
 	player->tiley = player->y >> TILESHIFT;
 }

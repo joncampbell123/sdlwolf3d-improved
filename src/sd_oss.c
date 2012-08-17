@@ -151,13 +151,13 @@ static void *SoundThread(void *data)
 				OPLWrite(OPL, 3 + alSus, inst->cSus);
 				OPLWrite(OPL, 3 + alWave, inst->cWave);
 
-				//OPLWrite(OPL, alFeedCon, inst->nConn);
+				/*OPLWrite(OPL, alFeedCon, inst->nConn);*/
 				OPLWrite(OPL, alFeedCon, 0);
 				
 				AdlibBlock = ((AdlibSnd->block & 7) << 2) | 0x20;
 				AdlibData = (byte *)&AdlibSnd->data;
 				AdlibLength = AdlibSnd->common.length*5;
-				//OPLWrite(OPL, 0xB0, AdlibBlock);
+				/*OPLWrite(OPL, 0xB0, AdlibBlock);*/
 				NewAdlib = -1;
 			}
 			
@@ -183,7 +183,7 @@ static void *SoundThread(void *data)
 
 				if (AdlibPlaying != -1) {
 					if (AdlibLength == 0) {
-						//OPLWrite(OPL, 0xB0, AdlibBlock);
+						/*OPLWrite(OPL, 0xB0, AdlibBlock); */
 					} else if (AdlibLength == -1) {
 						OPLWrite(OPL, 0xA0, 00);
 						OPLWrite(OPL, 0xB0, AdlibBlock);
@@ -212,7 +212,7 @@ static void *SoundThread(void *data)
 					if (SoundPositioned) {
 						samp = (SoundData[(SoundPlayPos >> 16)] << 8)^0x8000;
 						snd = samp*(16-L)/32+musbuf[i/2];
-						//snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))*(16-L)>>5)+musbuf[i/2];
+						/*snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))*(16-L)>>5)+musbuf[i/2];*/
 						if (snd > 32767)
 							snd = 32767;
 						if (snd < -32768)
@@ -220,7 +220,7 @@ static void *SoundThread(void *data)
 						sndbuf[i+0] = snd;
 						samp = (SoundData[(SoundPlayPos >> 16)] << 8)^0x8000;
 						snd = samp*(16-R)/32+musbuf[i/2];
-						//snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))*(16-R)>>5)+musbuf[i/2];
+						/*snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))*(16-R)>>5)+musbuf[i/2];*/
 						if (snd > 32767)
 							snd = 32767;
 						if (snd < -32768)
@@ -242,7 +242,7 @@ static void *SoundThread(void *data)
 					}
 					SoundPlayPos += 10402; /* 7000 / 44100 * 65536 */
 					if ((SoundPlayPos >> 16) >= SoundPlayLen) {
-						//SoundPlayPos = 0;
+						/*SoundPlayPos = 0;*/
 						SoundPlayPos -= (SoundPlayLen << 16);
 						SoundLen -= 4096;
 						SoundPlayLen = (SoundLen < 4096) ? SoundLen : 4096;
@@ -386,11 +386,11 @@ void SD_Shutdown()
 	audiofd = -1;
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_PlaySound() - plays the specified sound on the appropriate hardware
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 boolean SD_PlaySound(soundnames sound)
 {
 	SoundCommon *s;
@@ -421,12 +421,12 @@ boolean SD_PlaySound(soundnames sound)
 	return false;
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_SoundPlaying() - returns the sound number that's playing, or 0 if
 //		no sound is playing
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 word SD_SoundPlaying()
 {
 	if (SoundPlaying != -1)
@@ -436,21 +436,21 @@ word SD_SoundPlaying()
 	return 0;
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_StopSound() - if a sound is playing, stops it
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void SD_StopSound()
 {
 	SoundPlaying = -1;
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_WaitSoundDone() - waits until the current sound is done playing
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void SD_WaitSoundDone()
 {
 	while (SD_SoundPlaying()) ;
@@ -510,21 +510,20 @@ static void SetSoundLoc(fixed gx, fixed gy)
 	fixed xt, yt;
 	int x, y;
 
-// translate point to view centered coordinates
-//
+/* translate point to view centered coordinates */
 	gx -= viewx;
 	gy -= viewy;
 
-//
+/*
 // calculate newx
-//
+*/
 	xt = FixedByFrac(gx,viewcos);
 	yt = FixedByFrac(gy,viewsin);
 	x = (xt - yt) >> TILESHIFT;
 
-//
+/*
 // calculate newy
-//
+*/
 	xt = FixedByFrac(gx,viewsin);
 	yt = FixedByFrac(gy,viewcos);
 	y = (yt + xt) >> TILESHIFT;
@@ -577,31 +576,31 @@ void UpdateSoundLoc(fixed x, fixed y, int angle)
 	}
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_MusicOn() - turns on the sequencer
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void SD_MusicOn()
 {
 	sqActive = true;
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_MusicOff() - turns off the sequencer and any playing notes
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void SD_MusicOff()
 {
 	sqActive = false;
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_StartMusic() - starts playing the music pointed to
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void SD_StartMusic(int music)
 {
 	music += STARTMUSIC;
@@ -618,21 +617,21 @@ void SD_SetDigiDevice(SDSMode mode)
 {
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_SetSoundMode() - Sets which sound hardware to use for sound effects
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 boolean SD_SetSoundMode(SDMode mode)
 {
 	return false;
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 //	SD_SetMusicMode() - sets the device to use for background music
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 boolean SD_SetMusicMode(SMMode mode)
 {
 	return false;

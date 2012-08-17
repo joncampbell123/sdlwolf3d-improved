@@ -83,30 +83,30 @@ static const int wolfdigimap[] =
 	NAZIFIRESND,            17,
 	SLURPIESND,             18,
 	LEVELDONESND,           22,
-	DEATHSCREAM4SND,	23,		// AIIEEE
-	DEATHSCREAM3SND,        23,		// DOUBLY-MAPPED!!!
-	DEATHSCREAM5SND,	24,		// DEE-DEE
-	DEATHSCREAM6SND,	25,		// FART
-	DEATHSCREAM7SND,	26,		// GASP
-	DEATHSCREAM8SND,	27,		// GUH-BOY!
-	DEATHSCREAM9SND,	28,		// AH GEEZ!
-	GETGATLINGSND,		38,		// Got Gat replacement
+	DEATHSCREAM4SND,	23,		/* AIIEEE */
+	DEATHSCREAM3SND,        23,		/* DOUBLY-MAPPED!!! */
+	DEATHSCREAM5SND,	24,		/* DEE-DEE */
+	DEATHSCREAM6SND,	25,		/* FART */
+	DEATHSCREAM7SND,	26,		/* GASP */
+	DEATHSCREAM8SND,	27,		/* GUH-BOY! */
+	DEATHSCREAM9SND,	28,		/* AH GEEZ! */
+	GETGATLINGSND,		38,		/* Got Gat replacement */
 #ifndef SPEARDEMO
 	DOGBARKSND,             1,
 	DOGDEATHSND,            14,
 	SPIONSND,               19,
 	NEINSOVASSND,           20,
 	DOGATTACKSND,           21,
-	TRANSSIGHTSND,		29,		// Trans Sight
-	TRANSDEATHSND,		30,		// Trans Death
-	WILHELMSIGHTSND,	31,		// Wilhelm Sight
-	WILHELMDEATHSND,	32,		// Wilhelm Death
-	UBERDEATHSND,		33,		// Uber Death
-	KNIGHTSIGHTSND,		34,		// Death Knight Sight
-	KNIGHTDEATHSND,		35,		// Death Knight Death
-	ANGELSIGHTSND,		36,		// Angel Sight
-	ANGELDEATHSND,		37,		// Angel Death
-	GETSPEARSND,		39,		// Got Spear replacement
+	TRANSSIGHTSND,		29,		/* Trans Sight */
+	TRANSDEATHSND,		30,		/* Trans Death */
+	WILHELMSIGHTSND,	31,		/* Wilhelm Sight */
+	WILHELMDEATHSND,	32,		/* Wilhelm Death */
+	UBERDEATHSND,		33,		/* Uber Death */
+	KNIGHTSIGHTSND,		34,		/* Death Knight Sight */
+	KNIGHTDEATHSND,		35,		/* Death Knight Death */
+	ANGELSIGHTSND,		36,		/* Angel Sight */
+	ANGELDEATHSND,		37,		/* Angel Death */
+	GETSPEARSND,		39,		/* Got Spear replacement */
 #endif
 #endif
 	LASTSOUND

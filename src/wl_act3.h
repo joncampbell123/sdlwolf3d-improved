@@ -69,9 +69,9 @@ typedef enum {
 	s_dogdie3,
 	s_dogdead,
 
-//
+/*
 // officers
-//
+*/
 
 	s_ofcstand,
 
@@ -104,9 +104,9 @@ typedef enum {
 
 
 
-//
+/*
 // mutant
-//
+*/
 
 	s_mutstand,
 
@@ -139,9 +139,9 @@ typedef enum {
 	s_mutdie5,
 
 
-//
+/*
 // SS
-//
+*/
 
 	s_ssstand,
 
@@ -191,9 +191,9 @@ typedef enum {
 	s_hboom2,
 	s_hboom3,
 
-//
+/*
 // trans
-//
+*/
 	s_transstand,
 
 	s_transchase1,
@@ -244,9 +244,9 @@ typedef enum {
 	s_ubershoot6,
 	s_ubershoot7,
 
-//
+/*
 // will
-//
+*/
 	s_willstand,
 
 	s_willchase1,
@@ -270,9 +270,9 @@ typedef enum {
 	s_willshoot5,
 	s_willshoot6,
 
-//
+/*
 // death
-//
+*/
 	s_deathstand,
 
 	s_deathchase1,
@@ -298,9 +298,9 @@ typedef enum {
 	s_deathshoot4,
 	s_deathshoot5,
 
-//
+/*
 // angel
-//
+*/
 
 	s_angelstand,
 
@@ -370,9 +370,9 @@ typedef enum {
 	s_clydechase1,
 	s_clydechase2,
 
-//
+/*
 // hans
-//
+*/
 	s_bossstand,
 
 	s_bosschase1,
@@ -396,9 +396,9 @@ typedef enum {
 	s_bossshoot7,
 	s_bossshoot8,
 
-//
+/*
 // gretel
-//
+*/
 	s_gretelstand,
 
 	s_gretelchase1,
@@ -422,9 +422,9 @@ typedef enum {
 	s_gretelshoot7,
 	s_gretelshoot8,
 
-//
+/*
 // schabb
-//
+*/
 	s_schabbstand,
 
 	s_schabbchase1,
@@ -452,9 +452,9 @@ typedef enum {
 	s_needle4,
 
 
-//
+/*
 // gift
-//
+*/
 	s_giftstand,
 
 	s_giftchase1,
@@ -476,9 +476,9 @@ typedef enum {
 	s_giftshoot1,
 	s_giftshoot2,
 
-//
+/*
 // fat
-//
+*/
 	s_fatstand,
 
 	s_fatchase1,
@@ -505,9 +505,9 @@ typedef enum {
 	s_fatshoot6,
 
 
-//
+/*
 // fake
-//
+*/
 	s_fakestand,
 
 	s_fakechase1,
@@ -538,9 +538,9 @@ typedef enum {
 	s_fire2,
 
 
-//
+/*
 // hitler
-//
+*/
 
 	s_mechastand,
 
@@ -591,9 +591,9 @@ typedef enum {
 	s_hitlershoot5,
 	s_hitlershoot6,
 
-//
+/*
 // BJ victory
-//
+*/
 
 	s_bjrun1,
 	s_bjrun1s,

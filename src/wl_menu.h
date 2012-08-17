@@ -7,7 +7,7 @@
 #define BORD2COLOR	0x93
 #define DEACTIVE	0x9b
 #define BKGDCOLOR	0x9d
-//#define STRIPE		0x9c
+/*#define STRIPE		0x9c*/
 
 #define MenuFadeOut()	VL_FadeOut(0,255,0,0,51,10)
 
@@ -87,9 +87,9 @@
 #define CST_SPC		60
 
 
-//
+/*
 // TYPEDEFS
-//
+*/
 typedef struct {
 	int x,y,amount,curpos,indent;
 } CP_iteminfo;
@@ -109,9 +109,9 @@ typedef struct {
 extern CP_itemtype MainMenu[], NewEMenu[];
 extern CP_iteminfo MainItems;
 
-//
+/*
 // FUNCTION PROTOTYPES
-//
+*/
 void SetupControlPanel(void);
 void CleanupControlPanel(void);
 
@@ -186,9 +186,9 @@ void MouseSensitivity(void);
 
 void CheckForEpisodes(void);
 
-//
+/*
 // VARIABLES
-//
+*/
 
 enum
 {
@@ -206,9 +206,9 @@ enum
 	quit
 } menuitems;
 
-//
+/*
 // WL_INTER
-//
+*/
 typedef struct {
 	int kill,secret,treasure;
 	long time;

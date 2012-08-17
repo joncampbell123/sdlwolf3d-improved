@@ -478,10 +478,10 @@ INLINE void OPL_CALC_RH( OPL_CH *CH )
 		outd[0] += OP_OUT(SLOT,env_out, feedback2)*2;
 	}
 
-	// SD  (17) = mul14[fnum7] + white noise
-	// TAM (15) = mul15[fnum8]
-	// TOP (18) = fnum6(mul18[fnum8]+whitenoise)
-	// HH  (14) = fnum7(mul18[fnum8]+whitenoise) + white noise
+	/* SD  (17) = mul14[fnum7] + white noise */
+	/* TAM (15) = mul15[fnum8] */
+	/* TOP (18) = fnum6(mul18[fnum8]+whitenoise) */
+	/* HH  (14) = fnum7(mul18[fnum8]+whitenoise) + white noise */
 	env_sd =OPL_CALC_SLOT(SLOT7_2) + whitenoise;
 	env_tam=OPL_CALC_SLOT(SLOT8_1);
 	env_top=OPL_CALC_SLOT(SLOT8_2);

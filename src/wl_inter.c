@@ -20,11 +20,11 @@ void ClearSplitVWB()
 /* ======================================================================== */
 
 #if defined(SPEAR) && !defined(SPEARDEMO)
-////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////
 //
 // End of Spear of Destiny
 //
-////////////////////////////////////////////////////////
+///////////////////////////////////////////////////// */
 
 void EndScreen(int palette, int screen)
 {
@@ -252,7 +252,7 @@ void Victory()
 void PG13()
 {
 	VW_FadeOut();
-	VW_Bar(0,0,320,200,0x82);			// background
+	VW_Bar(0,0,320,200,0x82);			/* background */
 
 	CA_CacheGrChunk (PG13PIC);
 	VWB_DrawPic (216,110,PG13PIC);
@@ -267,7 +267,7 @@ void PG13()
 }
 
 
-//==========================================================================
+/*==========================================================================*/
 
 void Write(int x,int y,const char *string)
 {
@@ -309,7 +309,7 @@ const int alpha[]={L_NUM0PIC,L_NUM1PIC,L_NUM2PIC,L_NUM3PIC,L_NUM4PIC,L_NUM5PIC,
 	   continue;
 
 	 case ' ': break;
-	 case 0x3a:	// ':'
+	 case 0x3a:	/* ':' */
 
 	   VWB_DrawPic(nx,ny,L_COLONPIC);
 	   nx+=8;
@@ -327,9 +327,9 @@ const int alpha[]={L_NUM0PIC,L_NUM1PIC,L_NUM2PIC,L_NUM3PIC,L_NUM4PIC,L_NUM5PIC,
 }
 
 
-//
+/*
 // Breathe Mr. BJ!!!
-//
+*/
 void BJ_Breathe()
 {
 	static int which=0,max=10;
@@ -383,9 +383,9 @@ void LevelCompleted()
 	const times parTimes[]=
 	{
 #ifndef SPEAR
-	 //
+	 /*
 	 // Episode One Par Times
-	 //
+	 */
 	 {1.5,	"01:30"},
 	 {2,	"02:00"},
 	 {2,	"02:00"},
@@ -394,12 +394,12 @@ void LevelCompleted()
 	 {3,	"03:00"},
 	 {2.5,	"02:30"},
 	 {2.5,	"02:30"},
-	 {0,	"??:??"},	// Boss level
-	 {0,	"??:??"},	// Secret level
+	 {0,	"??:??"},	/* Boss level */
+	 {0,	"??:??"},	/* Secret level */
 
-	 //
+	 /*
 	 // Episode Two Par Times
-	 //
+	 */
 	 {1.5,	"01:30"},
 	 {3.5,	"03:30"},
 	 {3,	"03:00"},
@@ -411,9 +411,9 @@ void LevelCompleted()
 	 {0,	"??:??"},
 	 {0,	"??:??"},
 
-	 //
+	 /*
 	 // Episode Three Par Times
-	 //
+	 */
 	 {1.5,	"01:30"},
 	 {1.5,	"01:30"},
 	 {2.5,	"02:30"},
@@ -425,9 +425,9 @@ void LevelCompleted()
 	 {0,	"??:??"},
 	 {0,	"??:??"},
 
-	 //
+	 /*
 	 // Episode Four Par Times
-	 //
+	 */
 	 {2,	"02:00"},
 	 {2,	"02:00"},
 	 {1.5,	"01:30"},
@@ -439,9 +439,9 @@ void LevelCompleted()
 	 {0,	"??:??"},
 	 {0,	"??:??"},
 
-	 //
+	 /*
 	 // Episode Five Par Times
-	 //
+	 */
 	 {2.5,	"02:30"},
 	 {1.5,	"01:30"},
 	 {2.5,	"02:30"},
@@ -453,9 +453,9 @@ void LevelCompleted()
 	 {0,	"??:??"},
 	 {0,	"??:??"},
 
-	 //
+	 /*
 	 // Episode Six Par Times
-	 //
+	 */
 	 {6.5,	"06:30"},
 	 {4,	"04:00"},
 	 {4.5,	"04:30"},
@@ -467,40 +467,40 @@ void LevelCompleted()
 	 {0,	"??:??"},
 	 {0,	"??:??"}
 #else
-	 //
+	 /*
 	 // SPEAR OF DESTINY TIMES
-	 //
+	 */
 	 {1.5,	"01:30"},
 	 {3.5,	"03:30"},
 	 {2.75,	"02:45"},
 	 {3.5,	"03:30"},
-	 {0,	"??:??"},	// Boss 1
+	 {0,	"??:??"},	/* Boss 1 */
 	 {4.5,	"04:30"},
 	 {3.25,	"03:15"},
 	 {2.75,	"02:45"},
 	 {4.75,	"04:45"},
-	 {0,	"??:??"},	// Boss 2
+	 {0,	"??:??"},	/* Boss 2 */
 	 {6.5,	"06:30"},
 	 {4.5,	"04:30"},
 	 {2.75,	"02:45"},
 	 {4.5,	"04:30"},
 	 {6,	"06:00"},
-	 {0,	"??:??"},	// Boss 3
+	 {0,	"??:??"},	/* Boss 3 */
 	 {6,	"06:00"},
-	 {0,	"??:??"},	// Boss 4
-	 {0,	"??:??"},	// Secret level 1
-	 {0,	"??:??"},	// Secret level 2
+	 {0,	"??:??"},	/* Boss 4 */
+	 {0,	"??:??"},	/* Secret level 1 */
+	 {0,	"??:??"},	/* Secret level 2 */
 #endif
 	};
 
 	CacheLump(LEVELEND_LUMP_START,LEVELEND_LUMP_END);
-	ClearSplitVWB();			// set up for double buffering in split screen
+	ClearSplitVWB();			/* set up for double buffering in split screen */
 	VW_Bar (0,0,320,200-STATUSLINES,127);
 	StartCPMusic(ENDLEVEL_MUS);
 
-//
+/*
 // do the intermission
-//
+*/
 	IN_ClearKeysDown();
 	IN_StartAck();
 
@@ -529,12 +529,12 @@ void LevelCompleted()
 
 	 Write(26,12,parTimes[gamestate.episode*10+mapon].timestr);
 
-	 //
+	 /*
 	 // PRINT TIME
-	 //
+	 */
 	 sec=gamestate.TimeCount/70;
 
-	 if (sec > 99*60)		// 99 minutes max
+	 if (sec > 99*60)		/* 99 minutes max */
 	   sec = 99*60;
 
 	 if (gamestate.TimeCount<parTimes[gamestate.episode*10+mapon].time*4200)
@@ -558,9 +558,9 @@ void LevelCompleted()
 	 VW_FadeIn ();
 
 
-	 //
+	 /*
 	 // FIGURE RATIOS OUT BEFOREHAND
-	 //
+	 */
 	 kr = sr = tr = 0;
 	 if (gamestate.killtotal)
 		kr=(gamestate.killcount*100)/gamestate.killtotal;
@@ -570,9 +570,9 @@ void LevelCompleted()
 		tr=(gamestate.treasurecount*100)/gamestate.treasuretotal;
 
 
-	 //
+	 /*
 	 // PRINT TIME BONUS
-	 //
+	 */
 	 bonus=timeleft*PAR_AMOUNT;
 	 if (bonus)
 	 {
@@ -598,9 +598,9 @@ void LevelCompleted()
 
 
 	 #define RATIOXX		37
-	 //
+	 /*
 	 // KILL RATIO
-	 //
+	 */
 	 ratio=kr;
 	 for (i=0;i<=ratio;i++)
 	 {
@@ -642,9 +642,9 @@ void LevelCompleted()
 	   BJ_Breathe();
 
 
-	 //
+	 /*
 	 // SECRET RATIO
-	 //
+	 */
 	 ratio=sr;
 	 for (i=0;i<=ratio;i++)
 	 {
@@ -686,9 +686,9 @@ void LevelCompleted()
 	   BJ_Breathe();
 
 
-	 //
+	 /*
 	 // TREASURE RATIO
-	 //
+	 */
 	 ratio=tr;
 	 for (i=0;i<=ratio;i++)
 	 {
@@ -728,9 +728,9 @@ void LevelCompleted()
 	   BJ_Breathe();
 
 
-	 //
+	 /*
 	 // JUMP STRAIGHT HERE IF KEY PRESSED
-	 //
+	 */
 	 done:
 
 	 itoa(kr,tempstr,10);
@@ -755,9 +755,9 @@ void LevelCompleted()
 	 x=36-strlen(tempstr)*2;
 	 Write(x,7,tempstr);
 
-	 //
+	 /*
 	 // SAVE RATIO INFORMATION FOR ENDGAME
-	 //
+	 */
 	 LevelRatios[mapon].kill=kr;
 	 LevelRatios[mapon].secret=sr;
 	 LevelRatios[mapon].treasure=tr;
@@ -809,9 +809,9 @@ void LevelCompleted()
 	while(!IN_CheckAck())
 	  BJ_Breathe();
 
-//
+/*
 // done
-//
+*/
 #ifdef SPEARDEMO
 	if (gamestate.mapon == 1)
 	{
@@ -842,7 +842,7 @@ void LevelCompleted()
 
 
 
-//==========================================================================
+/*==========================================================================*/
 
 
 /*
@@ -898,7 +898,7 @@ void PreloadGraphics()
 }
 
 
-//==========================================================================
+/*==========================================================================*/
 
 /*
 ==================
@@ -959,9 +959,9 @@ void DrawHighScores()
 	{
 		PrintY = 76 + (16 * i);
 
-		//
+		/*
 		// name
-		//
+		*/
 #ifndef SPEAR
 		PrintX = 4*8;
 #else
@@ -969,13 +969,13 @@ void DrawHighScores()
 #endif
 		US_Print(s->name);
 
-		//
+		/*
 		// level
-		//
+		*/
 		ultoa(s->completed, buffer, 10);
 #ifndef SPEAR
 		for (str = buffer;*str;str++)
-			*str = *str + (129 - '0');	// Used fixed-width numbers (129...)
+			*str = *str + (129 - '0');	/* Used fixed-width numbers (129...) */
 		USL_MeasureString(buffer,&w,&h);
 		PrintX = (22 * 8)-w;
 #else
@@ -998,13 +998,13 @@ void DrawHighScores()
 #endif
 		US_Print(buffer);
 
-		//
+		/*
 		// score
-		//
+		*/
 		ultoa(s->score, buffer, 10);
 #ifndef SPEAR
 		for (str = buffer; *str; str++)
-			*str = *str + (129 - '0');	// Used fixed-width numbers (129...)
+			*str = *str + (129 - '0');	/* Used fixed-width numbers (129...) */
 		USL_MeasureString(buffer, &w, &h);
 		PrintX = (34 * 8) - 8 - w;
 #else
@@ -1066,9 +1066,9 @@ void CheckHighScore(long score, word other)
 
 	if (n != -1)
 	{
-	//
+	/*
 	// got a high score
-	//
+	*/
 		PrintY = 76 + (16 * n);
 #ifndef SPEAR
 		PrintX = 4*8;

@@ -100,31 +100,31 @@ static void TransformActor(objtype *ob)
 {
 	fixed gx,gy,gxt,gyt,nx,ny;
 
-//
+/*
 // translate point to view centered coordinates
-//
+ */
 	gx = ob->x-viewx;
 	gy = ob->y-viewy;
 
-//
+/*
 // calculate newx
-//
+*/
 	gxt = FixedByFrac(gx, viewcos);
 	gyt = FixedByFrac(gy, viewsin);
-	nx = gxt-gyt-ACTORSIZE;		// fudge the shape forward a bit, because
+	nx = gxt-gyt-ACTORSIZE;		/* fudge the shape forward a bit, because
 					// the midpoint could put parts of the shape
-					// into an adjacent wall
+					   into an adjacent wall */
 
-//
+/*
 // calculate newy
-//
+*/
 	gxt = FixedByFrac(gx,viewsin);
 	gyt = FixedByFrac(gy,viewcos);
 	ny = gyt+gxt;
 
-//
+/*
 // calculate perspective ratio
-//
+*/
 	ob->transx = nx;
 	ob->transy = ny;
 
@@ -164,29 +164,29 @@ static boolean TransformTile(int tx, int ty, int *dispx, int *dispheight)
 {
 	fixed gx,gy,gxt,gyt,nx,ny;
 
-//
+/*
 // translate point to view centered coordinates
-//
+*/
 	gx = ((long)tx<<TILESHIFT)+0x8000-viewx;
 	gy = ((long)ty<<TILESHIFT)+0x8000-viewy;
 
-//
+/*
 // calculate newx
-//
+*/
 	gxt = FixedByFrac(gx,viewcos);
 	gyt = FixedByFrac(gy,viewsin);
-	nx = gxt-gyt-0x2000;		// 0x2000 is size of object
+	nx = gxt-gyt-0x2000;		/* 0x2000 is size of object */
 
-//
+/*
 // calculate newy
-//
+*/
 	gxt = FixedByFrac(gx,viewsin);
 	gyt = FixedByFrac(gy,viewcos);
 	ny = gyt+gxt;
 
-//
+/*
 // calculate perspective ratio
-//
+*/
 	if (nx<MINDIST)			/* too close, don't overflow the divide */
 	{
 		*dispheight = 0;
@@ -197,9 +197,9 @@ static boolean TransformTile(int tx, int ty, int *dispx, int *dispheight)
 
 	*dispheight = heightnumerator/(nx>>8);
 
-//
+/*
 // see if it should be grabbed
-//
+*/
 	if ( (nx<TILEGLOBAL) && (ny>-TILEGLOBAL/2) && (ny<TILEGLOBAL/2) )
 		return true;
 	else
@@ -238,8 +238,8 @@ static int CalcRotate(objtype *ob)
 	while (angle<0)
 		angle+=ANGLES;
 
-	if (gamestates[ob->state].rotate == 2)  // 2 rotation pain frame
-		return 4*(angle/(ANGLES/2));    // seperated by 3
+	if (gamestates[ob->state].rotate == 2)  /* 2 rotation pain frame */
+		return 4*(angle/(ANGLES/2));    /* seperated by 3 */
 
 	return angle/(ANGLES/8);
 }
@@ -299,21 +299,21 @@ static void DrawScaleds()
 			visptr++;
 	}
 
-//
+/*
 // place active objects
-//
+*/
 	for (obj = player->next; obj; obj = obj->next)
 	{
 		if (!(visptr->shapenum = gamestates[obj->state].shapenum))
-			continue;  // no shape
+			continue;  /* no shape */
 
 		spotloc = (obj->tilex << 6) + obj->tiley;
 		visspot = &spotvis[0][0] + spotloc;
 		tilespot = &tilemap[0][0] + spotloc;
 
-		//
+		/*
 		// could be in any of the nine surrounding tiles
-		//
+		*/
 		if (*visspot
 		|| (*(visspot-1) && !*(tilespot-1))
 		|| (*(visspot+1) && !*(tilespot+1))
@@ -327,12 +327,12 @@ static void DrawScaleds()
 			obj->active = ac_yes;
 			TransformActor(obj);
 			if (!obj->viewheight)
-				continue;						// too close or far away
+				continue;						/* too close or far away */
 
 			visptr->viewx = obj->viewx;
 			visptr->viewheight = obj->viewheight;
 			if (visptr->shapenum == -1)
-				visptr->shapenum = obj->temp1;	// special shape
+				visptr->shapenum = obj->temp1;	/* special shape */
 
 			if (gamestates[obj->state].rotate)
 				visptr->shapenum += CalcRotate(obj);
@@ -344,13 +344,13 @@ static void DrawScaleds()
 			obj->flags &= ~FL_VISABLE;
 	}
 
-//
+/*
 // draw from back to front
-//
+*/
 	numvisable = visptr-&vislist[0];
 
 	if (!numvisable)
-		return;									// no visable objects
+		return;									/* no visable objects */
 
 	for (i = 0; i < numvisable; i++)
 	{
@@ -364,9 +364,9 @@ static void DrawScaleds()
 				farthest = visstep;
 			}
 		}
-		//
+		/*
 		// draw farthest
-		//
+		*/
 		ScaleShape(farthest->viewx, farthest->shapenum, farthest->viewheight);
 
 		farthest->viewheight = 32000;
@@ -465,9 +465,9 @@ static void MapRow()
 	while (mr_count--) {
 		ebx = ((esi & 0xFC000000) >> 25) | ((esi & 0xFC00) >> 3);
 		esi += edx;
-		//ebx = ((mr_yfrac & 0xFC00) >> (25-16)) | ((mr_xfrac & 0xFC00) >> 3);
-		//mr_yfrac += mr_ystep;
-		//mr_xfrac += mr_xstep;
+		/*ebx = ((mr_yfrac & 0xFC00) >> (25-16)) | ((mr_xfrac & 0xFC00) >> 3);*/
+		/*mr_yfrac += mr_ystep;*/
+		/*mr_xfrac += mr_xstep;*/
 		
 		mr_dest[0] = planepics[ebx+0];
 		mr_dest[mr_rowofs] = planepics[ebx+1];
@@ -501,7 +501,7 @@ static void DrawSpans(int x1, int x2, int height)
 	startxfrac = (viewx + FixedByFrac(length, viewcos));
 	startyfrac = (viewy - FixedByFrac(length, viewsin));
 
-// draw two spans simultaniously
+/* draw two spans simultaniously*/
 
 	prestep = viewwidth/2 - x1;
 
@@ -576,11 +576,11 @@ void DrawPlanes()
 	for (x = 0; x < viewwidth; x++)
 	{
 		height = wallheight[x]>>3;
-		if (height < lastheight) {	// more starts
+		if (height < lastheight) {	/* more starts */
 			do {
 				spanstart[--lastheight] = x;
 			} while (lastheight > height);
-		} else if (height > lastheight) {	// draw spans
+		} else if (height > lastheight) {	/* draw spans */
 			if (height > halfheight)
 				height = halfheight;
 			for (; lastheight < height; lastheight++)
@@ -863,9 +863,9 @@ static int CalcHeight()
 
 	nx = gxt-gyt;
 
-  //
+  /*
   // calculate perspective ratio (heightnumerator/(nx>>8))
-  //
+  */
 	if (nx < MINDIST)
 		nx = MINDIST;			/* don't let divide overflow */
 
@@ -956,7 +956,7 @@ static void HitVertWall()
 	
 	wallheight[postx] = CalcHeight();
 
-	if (tilehit & 0x40) { // check for adjacent doors
+	if (tilehit & 0x40) { /* check for adjacent doors */
 		ytile = yintercept>>TILESHIFT;
 		if (tilemap[xtile-xtilestep][ytile] & 0x80)
 			wallpic = DOORWALL+3;
@@ -984,7 +984,7 @@ static void HitHorizWall()
 		
 	wallheight[postx] = CalcHeight();
 
-	if (tilehit & 0x40) { // check for adjacent doors
+	if (tilehit & 0x40) { /* check for adjacent doors */
 		xtile = xintercept>>TILESHIFT;
 		if (tilemap[xtile][ytile-ytilestep] & 0x80)
 			wallpic = DOORWALL+2;
@@ -1144,10 +1144,10 @@ for (postx = 0; postx < viewwidth; postx++) {
 		goto entry90;
 	}
 	
-	yintercept = viewy + FixedByFrac(xpartial, ystep); // + xtilestep;
+	yintercept = viewy + FixedByFrac(xpartial, ystep); /* + xtilestep; */
 	xtile = focaltx + xtilestep;
 
-	xintercept = viewx + FixedByFrac(ypartial, xstep); // + ytilestep;
+	xintercept = viewx + FixedByFrac(ypartial, xstep); /* + ytilestep; */
 	ytile = focalty + ytilestep;
 
 /* CORE LOOP */

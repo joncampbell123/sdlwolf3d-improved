@@ -18,19 +18,19 @@ extern int vwidth, vheight; /* size of screen */
 =============================================================================
 */
 
-#define MAXACTORS		150		// max number of nazis, etc / map
-#define MAXSTATS		400		// max number of lamps, bonus, etc
-#define MAXDOORS		64		// max number of sliding doors
-#define MAXWALLTILES		64		// max number of wall tiles
+#define MAXACTORS		150		/* max number of nazis, etc / map */
+#define MAXSTATS		400		/* max number of lamps, bonus, etc */
+#define MAXDOORS		64		/* max number of sliding doors */
+#define MAXWALLTILES		64		/* max number of wall tiles */
 
-//
-// tile constants
-//
+/*
+ * tile constants
+*/
 
 #define	ICONARROWS		90
 #define PUSHABLETILE		98
-#define EXITTILE		99		// at end of castle
-#define AREATILE		107		// first of NUMAREAS floor tiles
+#define EXITTILE		99		/* at end of castle */
+#define AREATILE		107		/* first of NUMAREAS floor tiles */
 #define NUMAREAS		37
 #define ELEVATORTILE		21
 #define AMBUSHTILE		106
@@ -38,7 +38,7 @@ extern int vwidth, vheight; /* size of screen */
 
 #define HEIGHTRATIO		0.50
 
-//----------------
+/*----------------*/
 
 #define EXTRAPOINTS	40000
 
@@ -67,7 +67,7 @@ extern int vwidth, vheight; /* size of screen */
 
 #define STARTAMMO	8
 
-// object flag values
+/* object flag values */
 
 #define FL_SHOOTABLE	1
 #define FL_BONUS		2
@@ -78,16 +78,16 @@ extern int vwidth, vheight; /* size of screen */
 #define FL_AMBUSH		64
 #define FL_NONMARK		128
 
-//
-// sprite constants
-//
+/*
+ * sprite constants
+ */
 
 enum {
 		SPR_DEMO,
 		SPR_DEATHCAM,
-//
-// static sprites
-//
+/*
+ * static sprites
+ */
 		SPR_STAT_0,SPR_STAT_1,SPR_STAT_2,SPR_STAT_3,
 		SPR_STAT_4,SPR_STAT_5,SPR_STAT_6,SPR_STAT_7,
 
@@ -110,9 +110,9 @@ enum {
 		SPR_STAT_48,SPR_STAT_49,SPR_STAT_50,SPR_STAT_51,
 #endif
 
-//
-// guard
-//
+/*
+ * guard
+ */
 		SPR_GRD_S_1,SPR_GRD_S_2,SPR_GRD_S_3,SPR_GRD_S_4,
 		SPR_GRD_S_5,SPR_GRD_S_6,SPR_GRD_S_7,SPR_GRD_S_8,
 
@@ -133,9 +133,9 @@ enum {
 
 		SPR_GRD_SHOOT1,SPR_GRD_SHOOT2,SPR_GRD_SHOOT3,
 
-//
-// dogs
-//
+/*
+ * dogs
+ */
 		SPR_DOG_W1_1,SPR_DOG_W1_2,SPR_DOG_W1_3,SPR_DOG_W1_4,
 		SPR_DOG_W1_5,SPR_DOG_W1_6,SPR_DOG_W1_7,SPR_DOG_W1_8,
 
@@ -153,9 +153,9 @@ enum {
 
 
 
-//
-// ss
-//
+/*
+ * ss
+ */
 		SPR_SS_S_1,SPR_SS_S_2,SPR_SS_S_3,SPR_SS_S_4,
 		SPR_SS_S_5,SPR_SS_S_6,SPR_SS_S_7,SPR_SS_S_8,
 
@@ -176,9 +176,9 @@ enum {
 
 		SPR_SS_SHOOT1,SPR_SS_SHOOT2,SPR_SS_SHOOT3,
 
-//
-// mutant
-//
+/*
+ * mutant
+ */
 		SPR_MUT_S_1,SPR_MUT_S_2,SPR_MUT_S_3,SPR_MUT_S_4,
 		SPR_MUT_S_5,SPR_MUT_S_6,SPR_MUT_S_7,SPR_MUT_S_8,
 
@@ -199,9 +199,9 @@ enum {
 
 		SPR_MUT_SHOOT1,SPR_MUT_SHOOT2,SPR_MUT_SHOOT3,SPR_MUT_SHOOT4,
 
-//
-// officer
-//
+/*
+ * officer
+ */
 		SPR_OFC_S_1,SPR_OFC_S_2,SPR_OFC_S_3,SPR_OFC_S_4,
 		SPR_OFC_S_5,SPR_OFC_S_6,SPR_OFC_S_7,SPR_OFC_S_8,
 
@@ -223,41 +223,41 @@ enum {
 		SPR_OFC_SHOOT1,SPR_OFC_SHOOT2,SPR_OFC_SHOOT3,
 
 #ifndef SPEAR
-//
-// ghosts
-//
+/*
+ * ghosts
+ */
 		SPR_BLINKY_W1,SPR_BLINKY_W2,SPR_PINKY_W1,SPR_PINKY_W2,
 		SPR_CLYDE_W1,SPR_CLYDE_W2,SPR_INKY_W1,SPR_INKY_W2,
 
-//
-// hans
-//
+/*
+ * hans
+ */
 		SPR_BOSS_W1,SPR_BOSS_W2,SPR_BOSS_W3,SPR_BOSS_W4,
 		SPR_BOSS_SHOOT1,SPR_BOSS_SHOOT2,SPR_BOSS_SHOOT3,SPR_BOSS_DEAD,
 
 		SPR_BOSS_DIE1,SPR_BOSS_DIE2,SPR_BOSS_DIE3,
 
-//
-// schabbs
-//
+/*
+ * schabbs
+ */
 		SPR_SCHABB_W1,SPR_SCHABB_W2,SPR_SCHABB_W3,SPR_SCHABB_W4,
 		SPR_SCHABB_SHOOT1,SPR_SCHABB_SHOOT2,
 
 		SPR_SCHABB_DIE1,SPR_SCHABB_DIE2,SPR_SCHABB_DIE3,SPR_SCHABB_DEAD,
 		SPR_HYPO1,SPR_HYPO2,SPR_HYPO3,SPR_HYPO4,
 
-//
-// fake
-//
+/*
+ * fake
+ */
 		SPR_FAKE_W1,SPR_FAKE_W2,SPR_FAKE_W3,SPR_FAKE_W4,
 		SPR_FAKE_SHOOT,SPR_FIRE1,SPR_FIRE2,
 
 		SPR_FAKE_DIE1,SPR_FAKE_DIE2,SPR_FAKE_DIE3,SPR_FAKE_DIE4,
 		SPR_FAKE_DIE5,SPR_FAKE_DEAD,
 
-//
-// hitler
-//
+/*
+ * hitler
+ */
 		SPR_MECHA_W1,SPR_MECHA_W2,SPR_MECHA_W3,SPR_MECHA_W4,
 		SPR_MECHA_SHOOT1,SPR_MECHA_SHOOT2,SPR_MECHA_SHOOT3,SPR_MECHA_DEAD,
 
@@ -269,26 +269,26 @@ enum {
 		SPR_HITLER_DIE1,SPR_HITLER_DIE2,SPR_HITLER_DIE3,SPR_HITLER_DIE4,
 		SPR_HITLER_DIE5,SPR_HITLER_DIE6,SPR_HITLER_DIE7,
 
-//
-// giftmacher
-//
+/*
+ * giftmacher
+ */
 		SPR_GIFT_W1,SPR_GIFT_W2,SPR_GIFT_W3,SPR_GIFT_W4,
 		SPR_GIFT_SHOOT1,SPR_GIFT_SHOOT2,
 
 		SPR_GIFT_DIE1,SPR_GIFT_DIE2,SPR_GIFT_DIE3,SPR_GIFT_DEAD,
 #endif
-//
-// Rocket, smoke and small explosion
-//
+/*
+ * Rocket, smoke and small explosion
+ */
 		SPR_ROCKET_1,SPR_ROCKET_2,SPR_ROCKET_3,SPR_ROCKET_4,
 		SPR_ROCKET_5,SPR_ROCKET_6,SPR_ROCKET_7,SPR_ROCKET_8,
 
 		SPR_SMOKE_1,SPR_SMOKE_2,SPR_SMOKE_3,SPR_SMOKE_4,
 		SPR_BOOM_1,SPR_BOOM_2,SPR_BOOM_3,
 
-//
-// Angel of Death's DeathSparks(tm)
-//
+/*
+ * Angel of Death's DeathSparks(tm)
+ */
 #ifdef SPEAR
 		SPR_HROCKET_1,SPR_HROCKET_2,SPR_HROCKET_3,SPR_HROCKET_4,
 		SPR_HROCKET_5,SPR_HROCKET_6,SPR_HROCKET_7,SPR_HROCKET_8,
@@ -300,75 +300,75 @@ enum {
 #endif
 
 #ifndef SPEAR
-//
-// gretel
-//
+/*
+ * gretel
+ */
 		SPR_GRETEL_W1,SPR_GRETEL_W2,SPR_GRETEL_W3,SPR_GRETEL_W4,
 		SPR_GRETEL_SHOOT1,SPR_GRETEL_SHOOT2,SPR_GRETEL_SHOOT3,SPR_GRETEL_DEAD,
 
 		SPR_GRETEL_DIE1,SPR_GRETEL_DIE2,SPR_GRETEL_DIE3,
 
-//
-// fat face
-//
+/*
+ * fat face
+ */
 		SPR_FAT_W1,SPR_FAT_W2,SPR_FAT_W3,SPR_FAT_W4,
 		SPR_FAT_SHOOT1,SPR_FAT_SHOOT2,SPR_FAT_SHOOT3,SPR_FAT_SHOOT4,
 
 		SPR_FAT_DIE1,SPR_FAT_DIE2,SPR_FAT_DIE3,SPR_FAT_DEAD,
 
-//
-// bj
-//
+/*
+ * bj
+ */
 		SPR_BJ_W1,SPR_BJ_W2,SPR_BJ_W3,SPR_BJ_W4,
 		SPR_BJ_JUMP1,SPR_BJ_JUMP2,SPR_BJ_JUMP3,SPR_BJ_JUMP4,
 #else
-//
-// THESE ARE FOR 'SPEAR OF DESTINY'
-//
+/*
+ * THESE ARE FOR 'SPEAR OF DESTINY'
+ */
 
-//
-// Trans Grosse
-//
+/*
+ * Trans Grosse
+ */
 		SPR_TRANS_W1,SPR_TRANS_W2,SPR_TRANS_W3,SPR_TRANS_W4,
 		SPR_TRANS_SHOOT1,SPR_TRANS_SHOOT2,SPR_TRANS_SHOOT3,SPR_TRANS_DEAD,
 
 		SPR_TRANS_DIE1,SPR_TRANS_DIE2,SPR_TRANS_DIE3,
 
-//
-// Wilhelm
-//
+/*
+ * Wilhelm
+ */
 		SPR_WILL_W1,SPR_WILL_W2,SPR_WILL_W3,SPR_WILL_W4,
 		SPR_WILL_SHOOT1,SPR_WILL_SHOOT2,SPR_WILL_SHOOT3,SPR_WILL_SHOOT4,
 
 		SPR_WILL_DIE1,SPR_WILL_DIE2,SPR_WILL_DIE3,SPR_WILL_DEAD,
 
-//
-// UberMutant
-//
+/*
+ * UberMutant
+ */
 		SPR_UBER_W1,SPR_UBER_W2,SPR_UBER_W3,SPR_UBER_W4,
 		SPR_UBER_SHOOT1,SPR_UBER_SHOOT2,SPR_UBER_SHOOT3,SPR_UBER_SHOOT4,
 
 		SPR_UBER_DIE1,SPR_UBER_DIE2,SPR_UBER_DIE3,SPR_UBER_DIE4,
 		SPR_UBER_DEAD,
 
-//
-// Death Knight
-//
+/*
+ * Death Knight
+ */
 		SPR_DEATH_W1,SPR_DEATH_W2,SPR_DEATH_W3,SPR_DEATH_W4,
 		SPR_DEATH_SHOOT1,SPR_DEATH_SHOOT2,SPR_DEATH_SHOOT3,SPR_DEATH_SHOOT4,
 
 		SPR_DEATH_DIE1,SPR_DEATH_DIE2,SPR_DEATH_DIE3,SPR_DEATH_DIE4,
 		SPR_DEATH_DIE5,SPR_DEATH_DIE6,SPR_DEATH_DEAD,
 
-//
-// Ghost
-//
+/*
+ * Ghost
+ */
 		SPR_SPECTRE_W1,SPR_SPECTRE_W2,SPR_SPECTRE_W3,SPR_SPECTRE_W4,
 		SPR_SPECTRE_F1,SPR_SPECTRE_F2,SPR_SPECTRE_F3,SPR_SPECTRE_F4,
 
-//
-// Angel of Death
-//
+/*
+ * Angel of Death
+ */
 		SPR_ANGEL_W1,SPR_ANGEL_W2,SPR_ANGEL_W3,SPR_ANGEL_W4,
 		SPR_ANGEL_SHOOT1,SPR_ANGEL_SHOOT2,SPR_ANGEL_TIRED1,SPR_ANGEL_TIRED2,
 
@@ -377,9 +377,9 @@ enum {
 
 #endif
 
-//
-// player attack frames
-//
+/*
+ * player attack frames
+ */
 		SPR_KNIFEREADY,SPR_KNIFEATK1,SPR_KNIFEATK2,SPR_KNIFEATK3,
 		SPR_KNIFEATK4,
 
@@ -519,11 +519,11 @@ typedef enum {
 	en_death
 } enemy_t;
 
-//---------------------
-//
-// trivial actor structure
-//
-//---------------------
+/*---------------------
+*
+* trivial actor structure
+*
+*---------------------*/
 
 typedef struct statstruct
 {
@@ -534,11 +534,11 @@ typedef struct statstruct
 	byte	itemnumber;
 } statobj_t;
 
-//---------------------
-//
-// door actor structure
-//
-//---------------------
+/*---------------------
+ *
+ * door actor structure
+ *
+ *---------------------*/
 
 typedef struct doorstruct
 {
@@ -549,11 +549,11 @@ typedef struct doorstruct
 	int	ticcount;
 } doorobj_t;
 
-//--------------------
-//
-// thinking actor structure
-//
-//--------------------
+/*--------------------
+ *
+ * thinking actor structure
+ *
+ *--------------------*/
 
 typedef struct objstruct
 {
@@ -625,11 +625,11 @@ enum {
 	gd_hard
 };
 
-//---------------
-//
-// gamestate structure
-//
-//---------------
+/*---------------
+ *
+ * gamestate structure
+ *
+ *---------------*/
 
 typedef	struct
 {
@@ -649,7 +649,7 @@ typedef	struct
 			secrettotal,treasuretotal,killtotal;
 	long		TimeCount;
 	long		killx,killy;
-	boolean		victoryflag;		// set during victory animations
+	boolean		victoryflag;		/* set during victory animations */
 } gametype;
 
 
@@ -752,7 +752,7 @@ void DrawStatusBar();
 =============================================================================
 */
 
-extern	long		funnyticount;		// FOR FUNNY BJ FACE
+extern	long		funnyticount;		/* FOR FUNNY BJ FACE */
 
 extern	exit_t		playstate;
 
@@ -765,15 +765,15 @@ extern	doorobj_t	doorobjlist[MAXDOORS],*lastdoorobj;
 
 extern	unsigned	farmapylookup[MAPSIZE];
 
-extern	byte		tilemap[MAPSIZE][MAPSIZE];	// wall values only
+extern	byte		tilemap[MAPSIZE][MAPSIZE];	/* wall values only */
 extern	byte		spotvis[MAPSIZE][MAPSIZE];
 extern	int		actorat[MAPSIZE][MAPSIZE];
 
 extern	boolean		singlestep,godmode,noclip;
 
-//
-// control info
-//
+/*
+ * control info
+ */
 extern	boolean		mouseenabled,joystickenabled,joypadenabled;
 extern	int			joystickport;
 extern	int			dirscan[4];
@@ -785,10 +785,10 @@ extern	boolean		buttonheld[NUMBUTTONS];
 
 extern	int viewsize;
 
-//
-// curent user input
-//
-extern	int			controlx,controly;		// range from -100 to 100
+/*
+ * curent user input
+ */
+extern	int			controlx,controly;		/* range from -100 to 100 */
 extern	boolean		buttonstate[NUMBUTTONS];
 
 extern	boolean		demorecord,demoplayback;
@@ -896,11 +896,11 @@ boolean	CheckSight (objtype *ob);
 =============================================================================
 */
 
-//
-// player state info
-//
+/*
+ * player state info
+ */
 extern	long		thrustspeed;
-extern	unsigned	plux,pluy;		// player coordinates scaled to unsigned
+extern	unsigned	plux,pluy;		/* player coordinates scaled to unsigned */
 
 extern	int			anglefrac;
 extern	int			facecount;
@@ -943,7 +943,7 @@ extern	byte		areaconnect[NUMAREAS][NUMAREAS];
 extern	boolean		areabyplayer[NUMAREAS];
 
 extern unsigned	pwallstate;
-extern unsigned	pwallpos;			// amount a pushable wall has been moved (0-63)
+extern unsigned	pwallpos;			/* amount a pushable wall has been moved (0-63) */
 extern unsigned	pwallx,pwally;
 extern int			pwalldir;
 

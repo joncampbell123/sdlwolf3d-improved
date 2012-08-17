@@ -1,16 +1,16 @@
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // WL_MENU.C
 // by John Romero (C) 1992 Id Software, Inc.
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 #include "wl_def.h"
 
-//
+/*
 // PRIVATE PROTOTYPES
-//
+*/
 
-enum {MOUSE,JOYSTICK,KEYBOARDBTNS,KEYBOARDMOVE};        // FOR INPUT TYPES
+enum {MOUSE,JOYSTICK,KEYBOARDBTNS,KEYBOARDMOVE};        /* FOR INPUT TYPES */
 
 void CP_ReadThis();
 
@@ -160,17 +160,17 @@ static int SaveGamesAvail[10],StartGame,SoundStatus=1,pickquick;
 static char SaveGameNames[10][32],SaveName[13]="savegam?.";
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // INPUT MANAGER SCANCODE TABLES and
 //
 //	IN_GetScanName() - Returns a string containing the name of the
 //		specified scan code
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 
 static const char
-					*ScanNames[] =		// Scan code names with single chars
+					*ScanNames[] =		/* Scan code names with single chars */
 					{
 	"?","?","1","2","3","4","5","6","7","8","9","0","-","+","?","?",
 	"Q","W","E","R","T","Y","U","I","O","P","[","]","|","?","A","S",
@@ -180,8 +180,8 @@ static const char
 	"\x13","?","?","?","?","?","?","?","?","?","?","?","?","?","?","?",
 	"?","?","?","?","?","?","?","?","?","?","?","?","?","?","?","?",
 	"?","?","?","?","?","?","?","?","?","?","?","?","?","?","?","?"
-					},	// DEBUG - consolidate these
-					*ExtScanNames[] =	// Names corresponding to ExtScanCodes
+					},	/* DEBUG - consolidate these */
+					*ExtScanNames[] =	/* Names corresponding to ExtScanCodes */
 					{
 	"Esc","BkSp","Tab","Ctrl","LShft","Space","CapsLk","F1","F2","F3","F4",
 	"F5","F6","F7","F8","F9","F10","F11","F12","ScrlLk","Enter","RShft",
@@ -190,7 +190,7 @@ static const char
 					};
 
 static const ScanCode
-					ExtScanCodes[] =	// Scan codes with >1 char names
+					ExtScanCodes[] =	/* Scan codes with >1 char names */
 					{
 	1,0xe,0xf,0x1d,sc_LShift,0x39,0x3a,0x3b,0x3c,0x3d,0x3e,
 	0x3f,0x40,0x41,0x42,0x43,0x44,0x57,0x59,0x46,0x1c,sc_RShift,
@@ -210,11 +210,11 @@ const char *IN_GetScanName(ScanCode scan)
 	return ScanNames[scan];
 }
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Wolfenstein Control Panel!  Ta Da!
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void US_ControlPanel(byte scancode)
 {
 	int which;
@@ -226,9 +226,9 @@ void US_ControlPanel(byte scancode)
 	StartCPMusic(MENUSONG);
 	SetupControlPanel();
 
-	//
+	/*
 	// F-KEYS FROM WITHIN GAME
-	//
+	*/
 	switch(scancode)
 	{
 		case sc_F1:
@@ -275,17 +275,17 @@ void US_ControlPanel(byte scancode)
 	MenuFadeIn();
 	StartGame=0;
 
-	//
+	/*
 	// MAIN MENU LOOP
-	//
+	*/
 	do
 	{
 		which=HandleMenu(&MainItems,&MainMenu[0],NULL);
 
 		#if defined(SPEAR) && !defined(SPEARDEMO)
-		//
+		/*
 		// EASTER EGG FOR SPEAR OF DESTINY!
-		//
+		*/
 		if (IN_KeyDown(sc_I) && IN_KeyDown(sc_D)) {
 			VW_FadeOut();
 			StartCPMusic (XJAZNAZI_MUS);
@@ -355,26 +355,26 @@ void US_ControlPanel(byte scancode)
 				}
 		}
 
-	//
+	/*
 	// "EXIT OPTIONS" OR "NEW GAME" EXITS
-	//
+	*/
 	} while(!StartGame);
 
-	//
+	/*
 	// DEALLOCATE EVERYTHING
-	//
+	*/
 	CleanupControlPanel();
 
-	//
+	/*
 	// CHANGE MAINMENU ITEM
-	//
+	*/
 	if (startgame || loadedgame)
 	{
 		MainMenu[viewscores].routine = NULL;
 		strcpy(MainMenu[viewscores].string,STR_EG);
 	}
 
-	// RETURN/START GAME EXECUTION
+	/* RETURN/START GAME EXECUTION */
 		
 #ifdef SPEAR
 	UnCacheLump(OPTIONS_LUMP_START, OPTIONS_LUMP_END);
@@ -383,10 +383,10 @@ void US_ControlPanel(byte scancode)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // DRAW MAIN MENU SCREEN
-//
+*/
 void DrawMainMenu()
 {
 	ClearMScreen();
@@ -397,9 +397,9 @@ void DrawMainMenu()
 
 	DrawWindow(MENU_X-8,MENU_Y-3,MENU_W,MENU_H,BKGDCOLOR);
 
-	//
+	/*
 	// CHANGE "GAME" AND "DEMO"
-	//
+	*/
 	if (ingame)
 	{
 
@@ -419,11 +419,11 @@ void DrawMainMenu()
 }
 
 #ifdef UPLOAD
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // READ THIS!
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CP_ReadThis()
 {
 	StartCPMusic(CORNER_MUS);
@@ -431,28 +431,28 @@ void CP_ReadThis()
 	StartCPMusic(MENUSONG);
 }
 #else
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // BOSS KEY
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void BossKey()
 {
 }
 #endif
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // CHECK QUICK-KEYS & QUIT (WHILE IN A GAME)
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 int CP_CheckQuick(unsigned scancode)
 {
 	switch(scancode)
 	{
-		//
+		/*
 		// END GAME
-		//
+		*/
 		case sc_F7:
 			CA_CacheGrChunk(STARTFONT+1);
 
@@ -469,9 +469,9 @@ int CP_CheckQuick(unsigned scancode)
 			MainMenu[savegame].active = 0;
 			return 1;
 
-		//
+		/*
 		// QUICKSAVE
-		//
+		*/
 		case sc_F8:
 			if (SaveGamesAvail[LSItems.curpos] && pickquick)
 			{
@@ -516,7 +516,7 @@ int CP_CheckQuick(unsigned scancode)
 
 				lasttimecount = get_TimeCount();
 
-				IN_GetMouseDelta(NULL, NULL); // Clear accumulated mouse movement
+				IN_GetMouseDelta(NULL, NULL); /* Clear accumulated mouse movement */
 				
 				#ifndef SPEAR
 				CA_UnCacheGrChunk(C_CURSOR1PIC);
@@ -584,7 +584,7 @@ int CP_CheckQuick(unsigned scancode)
 
 				lasttimecount = get_TimeCount();
 
-				IN_GetMouseDelta(NULL, NULL); // Clear accumulated mouse movement
+				IN_GetMouseDelta(NULL, NULL); /* Clear accumulated mouse movement */
 				
 				#ifndef SPEAR
 				CA_UnCacheGrChunk(C_CURSOR1PIC);
@@ -599,9 +599,9 @@ int CP_CheckQuick(unsigned scancode)
 			}
 			return 1;
 
-		//
+		/*
 		// QUIT
-		//
+		*/
 		case sc_F10:
 			CA_CacheGrChunk(STARTFONT+1);
 
@@ -628,11 +628,11 @@ int CP_CheckQuick(unsigned scancode)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // END THE CURRENT GAME
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 int CP_EndGame()
 {
 	if (!Confirm(ENDGAMESTR))
@@ -649,11 +649,11 @@ int CP_EndGame()
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // VIEW THE HIGH SCORES
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CP_ViewScores()
 {
 	fontnumber=0;
@@ -682,11 +682,11 @@ void CP_ViewScores()
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // START A NEW GAME
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CP_NewGame()
 {
 	int which,episode;
@@ -735,9 +735,9 @@ firstpart:
 
 	ShootSnd();
 
-	//
+	/*
 	// ALREADY IN A GAME?
-	//
+	*/
 	if (ingame)
 		if (!Confirm(CURGAME))
 		{
@@ -748,9 +748,9 @@ firstpart:
 	MenuFadeOut();
 
 #else
-	//
+	/*
 	// ALREADY IN A GAME?
-	//
+	*/
 	CacheLump (NEWGAME_LUMP_START,NEWGAME_LUMP_END);
 	DrawNewGame();
 	if (ingame)
@@ -783,9 +783,9 @@ firstpart:
 	StartGame=1;
 	MenuFadeOut();
 
-	//
+	/*
 	// CHANGE "READ THIS!" TO NORMAL COLOR
-	//
+	*/
 	#ifdef UPLOAD
 	MainMenu[readthis].active=1;
 	#endif
@@ -800,10 +800,10 @@ firstpart:
 
 
 #ifndef SPEAR
-/////////////////////
+/*///////////////////
 //
 // DRAW NEW EPISODE MENU
-//
+*/
 void DrawNewEpisode(void)
 {
 	int i;
@@ -829,10 +829,10 @@ void DrawNewEpisode(void)
 }
 #endif
 
-/////////////////////
+/*///////////////////
 //
 // DRAW NEW GAME MENU
-//
+*/
 void DrawNewGame(void)
 {
 	ClearMScreen();
@@ -858,21 +858,21 @@ void DrawNewGame(void)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // DRAW NEW GAME GRAPHIC
-//
+*/
 void DrawNewGameDiff(int w)
 {
 	VWB_DrawPic(NM_X+185,NM_Y+7,w+C_BABYMODEPIC);
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // HANDLE SOUND MENU
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CP_Sound()
 {
 	int which;
@@ -900,17 +900,17 @@ void CP_Sound()
 }
 
 
-//////////////////////
+/*////////////////////
 //
 // DRAW THE SOUND MENU
-//
+*/
 void DrawSoundMenu(void)
 {
 	int i,on;
 
-	//
+	/*
 	// DRAW SOUND MENU
-	//
+	*/
 	ClearMScreen();
 	VWB_DrawPic(112,184,C_MOUSELBACKPIC);
 
@@ -918,9 +918,9 @@ void DrawSoundMenu(void)
 	DrawWindow(SM_X-8,SM_Y2-3,SM_W,SM_H2,BKGDCOLOR);
 	DrawWindow(SM_X-8,SM_Y3-3,SM_W,SM_H3,BKGDCOLOR);
 
-	//
+	/*
 	// IF NO ADLIB, NON-CHOOSENESS!
-	//
+	*/
 	if (!AdLibPresent && !SoundBlasterPresent)
 	{
 		SndMenu[2].active=SndMenu[10].active=SndMenu[11].active=0;
@@ -942,29 +942,29 @@ void DrawSoundMenu(void)
 	for (i=0;i<SndItems.amount;i++)
 		if (SndMenu[i].string[0])
 		{
-			//
+			/*
 			// DRAW SELECTED/NOT SELECTED GRAPHIC BUTTONS
-			//
+			*/
 			on=0;
 			switch(i)
 			{
-				//
+				/*
 				// SOUND EFFECTS
-				//
+				*/
 				case 0: if (SoundMode==sdm_Off) on=1; break;
 				case 1: if (SoundMode==sdm_PC) on=1; break;
 				case 2: if (SoundMode==sdm_AdLib) on=1; break;
 
-				//
+				/*
 				// DIGITIZED SOUND
-				//
+				*/
 				case 5: if (DigiMode==sds_Off) on=1; break;
 				case 6: break;
 				case 7: if (DigiMode==sds_SoundBlaster) on=1; break;
 
-				//
+				/*
 				// MUSIC
-				//
+				*/
 				case 10: if (MusicMode==smm_Off) on=1; break;
 				case 11: if (MusicMode==smm_AdLib) on=1; break;
 			}
@@ -980,9 +980,9 @@ void DrawSoundMenu(void)
 }
 
 
-//
+/*
 // DRAW LOAD/SAVE IN PROGRESS
-//
+*/
 void DrawLSAction(int which)
 {
 	#define LSA_X	96
@@ -1008,11 +1008,11 @@ void DrawLSAction(int which)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // LOAD SAVED GAMES
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 int CP_LoadGame(int quick)
 {
 	int which, exit=0;
@@ -1020,9 +1020,9 @@ int CP_LoadGame(int quick)
 
 	strcpy(name, SaveName);
 
-	//
+	/*
 	// QUICKLOAD?
-	//
+	*/
 	if (quick)
 	{
 		which=LSItems.curpos;
@@ -1063,9 +1063,9 @@ int CP_LoadGame(int quick)
 
 			StartGame=1;
 			ShootSnd();
-			//
+			/*
 			// CHANGE "READ THIS!" TO NORMAL COLOR
-			//
+			*/
 
 			#ifdef UPLOAD
 			MainMenu[readthis].active=1;
@@ -1088,10 +1088,10 @@ int CP_LoadGame(int quick)
 }
 
 
-///////////////////////////////////
+/*/////////////////////////////////
 //
 // HIGHLIGHT CURRENT SELECTED ENTRY
-//
+*/
 void TrackWhichGame(int w)
 {
 	static int lastgameon=0;
@@ -1103,10 +1103,10 @@ void TrackWhichGame(int w)
 }
 
 
-////////////////////////////
+/*//////////////////////////
 //
 // DRAW THE LOAD/SAVE SCREEN
-//
+*/
 void DrawLoadSaveScreen(int loadsave)
 {
 	#define DISKX	100
@@ -1136,10 +1136,10 @@ void DrawLoadSaveScreen(int loadsave)
 }
 
 
-///////////////////////////////////////////
+/*/////////////////////////////////////////
 //
 // PRINT LOAD/SAVE GAME ENTRY W/BOX OUTLINE
-//
+*/
 void PrintLSEntry(int w,int color)
 {
 	SETFONTCOLOR(color,BKGDCOLOR);
@@ -1157,11 +1157,11 @@ void PrintLSEntry(int w,int color)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // SAVE CURRENT GAME
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 int CP_SaveGame(int quick)
 {
 	int which, exit=0;
@@ -1169,9 +1169,9 @@ int CP_SaveGame(int quick)
 
 	strcpy(name,SaveName);
 
-	//
+	/*
 	// QUICKSAVE?
-	//
+	*/
 	if (quick)
 	{
 		which=LSItems.curpos;
@@ -1198,9 +1198,9 @@ int CP_SaveGame(int quick)
 		which=HandleMenu(&LSItems,&LSMenu[0],TrackWhichGame);
 		if (which>=0)
 		{
-			//
+			/*
 			// OVERWRITE EXISTING SAVEGAME?
-			//
+			*/
 			if (SaveGamesAvail[which]) {
 				if (!Confirm(GAMESVD))
 				{
@@ -1259,11 +1259,11 @@ int CP_SaveGame(int quick)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // CALIBRATE JOYSTICK
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 int CalibrateJoystick()
 {
 	#define CALX	85
@@ -1336,9 +1336,9 @@ int CalibrateJoystick()
 		IN_CheckAck();
 	} while (IN_JoyButtons());
 
-	//
+	/*
 	// ASSIGN ACTUAL VALUES HERE
-	//
+	*/
 	if ((xmin != xmax) && (ymin != ymax))
 		IN_SetupJoy(joystickport,xmin,xmax,ymin,ymax);
 	else
@@ -1348,11 +1348,11 @@ int CalibrateJoystick()
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // DEFINE CONTROLS
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CP_Control()
 {
 	enum {MOUSEENABLE,JOYENABLE,USEPORT2,PADENABLE,MOUSESENS,CUSTOMIZE};
@@ -1418,10 +1418,10 @@ void CP_Control()
 }
 
 
-////////////////////////////////
+/*//////////////////////////////
 //
 // DRAW MOUSE SENSITIVITY SCREEN
-//
+*/
 void DrawMouseSens()
 {
 	ClearMScreen();
@@ -1451,10 +1451,10 @@ void DrawMouseSens()
 }
 
 
-///////////////////////////
+/*/////////////////////////
 //
 // ADJUST MOUSE SENSITIVITY
-//
+*/
 void MouseSensitivity()
 {
 	ControlInfo ci;
@@ -1526,10 +1526,10 @@ void MouseSensitivity()
 }
 
 
-///////////////////////////
+/*/////////////////////////
 //
 // DRAW CONTROL MENU SCREEN
-//
+*/
 void DrawCtlScreen()
 {
 	int i, x, y;
@@ -1588,9 +1588,9 @@ void DrawCtlScreen()
  else
    VWB_DrawPic(x,y,C_NOTSELECTEDPIC);
 
- //
+ /*
  // PICK FIRST AVAILABLE SPOT
- //
+ */
  if (CtlItems.curpos<0 || !CtlMenu[CtlItems.curpos].active)
    for (i=0;i<6;i++)
 	 if (CtlMenu[i].active)
@@ -1604,11 +1604,11 @@ void DrawCtlScreen()
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // CUSTOMIZE CONTROLS
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 enum {FIRE,STRAFE,RUN,OPEN};
 char mbarray[4][3]={"b0","b1","b2","b3"};
 int order[4]={RUN,OPEN,FIRE,STRAFE};
@@ -1648,10 +1648,10 @@ void CustomControls(void)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // DEFINE THE MOUSE BUTTONS
-//
+*/
 void DefineMouseBtns(void)
 {
  CustomCtrls mouseallowed={ {0,1,1,1} };
@@ -1659,10 +1659,10 @@ void DefineMouseBtns(void)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // DEFINE THE JOYSTICK BUTTONS
-//
+*/
 void DefineJoyBtns(void)
 {
  CustomCtrls joyallowed={ {1,1,1,1} };
@@ -1670,10 +1670,10 @@ void DefineJoyBtns(void)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // DEFINE THE KEYBOARD BUTTONS
-//
+*/
 void DefineKeyBtns(void)
 {
  CustomCtrls keyallowed={ {1,1,1,1} };
@@ -1681,10 +1681,10 @@ void DefineKeyBtns(void)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // DEFINE THE KEYBOARD BUTTONS
-//
+*/
 void DefineKeyMove(void)
 {
 	CustomCtrls keyallowed={ {1,1,1,1} };
@@ -1692,10 +1692,10 @@ void DefineKeyMove(void)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // ENTER CONTROL DATA FOR ANY TYPE OF CONTROL
-//
+*/
 enum {FWRD,RIGHT,BKWD,LEFT};
 int moveorder[4]={LEFT,RIGHT,FWRD,BKWD};
 
@@ -1709,9 +1709,9 @@ void EnterCtrlData(int index,CustomCtrls *cust,void (*DrawRtn)(int),void (*Print
  IN_ClearKeysDown();
  exit=0;
  redraw=1;
- //
+ /*
  // FIND FIRST SPOT IN ALLOWED ARRAY
- //
+ */
  for (j=0;j<4;j++)
    if (cust->allowed[j])
    {
@@ -1747,9 +1747,9 @@ void EnterCtrlData(int index,CustomCtrls *cust,void (*DrawRtn)(int),void (*Print
 			ci.button0=ci.button1=false;
 		}
 
-  //
+  /*
   // CHANGE BUTTON VALUE?
-  //
+  */
   if ((ci.button0|ci.button1|ci.button2|ci.button3)||
 	  ((type==KEYBOARDBTNS||type==KEYBOARDMOVE) && LastScan==sc_Enter))
   {
@@ -1767,9 +1767,9 @@ void EnterCtrlData(int index,CustomCtrls *cust,void (*DrawRtn)(int),void (*Print
 
 	IN_CheckAck(); /* force update */
 	
-	//
+	/*
 	// FLASH CURSOR
-	//
+	*/
 	if (get_TimeCount() >10)
 	{
 	 switch(tick)
@@ -1787,9 +1787,9 @@ void EnterCtrlData(int index,CustomCtrls *cust,void (*DrawRtn)(int),void (*Print
 	 VW_UpdateScreen();
 	}
 
-	//
+	/*
 	// WHICH TYPE OF INPUT DO WE PROCESS?
-	//
+	*/
 	switch(type)
 	{
 	 case MOUSE:
@@ -1867,9 +1867,9 @@ void EnterCtrlData(int index,CustomCtrls *cust,void (*DrawRtn)(int),void (*Print
 	   break;
 	}
 
-	//
+	/*
 	// EXIT INPUT?
-	//
+	*/
 	if (IN_KeyDown(sc_Escape))
 	{
 	 picked=1;
@@ -1887,9 +1887,9 @@ void EnterCtrlData(int index,CustomCtrls *cust,void (*DrawRtn)(int),void (*Print
   if (ci.button1 || IN_KeyDown(sc_Escape))
 	exit=1;
 
-  //
+  /*
   // MOVE TO ANOTHER SPOT?
-  //
+  */
   switch(ci.dir)
   {
    case dir_West:
@@ -1931,10 +1931,10 @@ void EnterCtrlData(int index,CustomCtrls *cust,void (*DrawRtn)(int),void (*Print
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // FIXUP GUN CURSOR OVERDRAW SHIT
-//
+*/
 void FixupCustom(int w)
 {
 	static int lastwhich=-1;
@@ -1987,10 +1987,10 @@ void FixupCustom(int w)
 }
 
 
-////////////////////////
+/*//////////////////////
 //
 // DRAW CUSTOMIZE SCREEN
-//
+*/
 void DrawCustomScreen(void)
 {
 	int i;
@@ -2002,9 +2002,9 @@ void DrawCustomScreen(void)
 	DrawStripes(10);
 	VWB_DrawPic(80,0,C_CUSTOMIZEPIC);
 
-	//
+	/*
 	// MOUSE
-	//
+	*/
 	SETFONTCOLOR(READCOLOR,BKGDCOLOR);
 	WindowX=0;
 	WindowW=320;
@@ -2032,9 +2032,9 @@ void DrawCustomScreen(void)
 	US_Print("\n");
 
 
-	//
+	/*
 	// JOYSTICK/PAD
-	//
+	*/
 #ifndef SPEAR
 	SETFONTCOLOR(READCOLOR,BKGDCOLOR);
 	US_CPrint("Joystick/Gravis GamePad\n");
@@ -2062,9 +2062,9 @@ void DrawCustomScreen(void)
 	US_Print("\n");
 
 
-	//
+	/*
 	// KEYBOARD
-	//
+	*/
 #ifndef SPEAR
 	SETFONTCOLOR(READCOLOR,BKGDCOLOR);
 	US_CPrint("Keyboard\n");
@@ -2086,9 +2086,9 @@ void DrawCustomScreen(void)
 	US_Print("\n");
 
 
-	//
+	/*
 	// KEYBOARD MOVE KEYS
-	//
+	*/
 	SETFONTCOLOR(TEXTCOLOR,BKGDCOLOR);
 	PrintX=CST_START;
 	US_Print(STR_LEFT);
@@ -2102,9 +2102,9 @@ void DrawCustomScreen(void)
 	DrawWindow(5,PrintY-1,310,13,BKGDCOLOR);
 	DrawCustKeys(0);
 
-	//
+	/*
 	// PICK STARTING POINT IN MENU
-	//
+	*/
 	if (CusItems.curpos<0)
 		for (i=0;i<CusItems.amount;i++)
 			if (CusMenu[i].active)
@@ -2235,11 +2235,11 @@ void DrawCustKeys(int hilight)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // CHANGE SCREEN VIEWING SIZE
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CP_ChangeView()
 {
 	int exit = 0, oldview, newview;
@@ -2303,10 +2303,10 @@ void CP_ChangeView()
 }
 
 
-/////////////////////////////
+/*///////////////////////////
 //
 // DRAW THE CHANGEVIEW SCREEN
-//
+*/
 void DrawChangeView(int view)
 {
 	VW_Bar(0,160,320,40,VIEWCOLOR);
@@ -2327,11 +2327,11 @@ void DrawChangeView(int view)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // QUIT THIS INFERNAL GAME!
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CP_Quit()
 {
 	if (Confirm(endStrings[(US_RndT()&0x7)+(US_RndT()&1)]))
@@ -2346,19 +2346,19 @@ void CP_Quit()
 	DrawMainMenu();
 }
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////
 //
 // SUPPORT ROUTINES
 //
 ////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Clear Menu screens to dark red
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void ClearMScreen(void)
 {
 #ifndef SPEAR
@@ -2369,11 +2369,11 @@ void ClearMScreen(void)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Un/Cache a LUMP of graphics
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CacheLump(int lumpstart, int lumpend)
 {
 	int i;
@@ -2392,11 +2392,11 @@ void UnCacheLump(int lumpstart, int lumpend)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Draw a window for a menu
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void DrawWindow(int x,int y,int w,int h,int wcolor)
 {
 	VW_Bar(x,y,w,h,wcolor);
@@ -2412,18 +2412,18 @@ void DrawOutline(int x,int y,int w,int h,int color1,int color2)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Setup Control Panel stuff - graphics, etc.
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void SetupControlPanel()
 {
 	int which;
 
-	//
+	/*
 	// CACHE GRAPHICS & SOUNDS
-	//
+	*/
 	CA_CacheGrChunk(STARTFONT+1);
 #ifndef SPEAR
 	CacheLump(CONTROLS_LUMP_START,CONTROLS_LUMP_END);
@@ -2440,9 +2440,9 @@ void SetupControlPanel()
 	else
 		MainMenu[savegame].active=1;
 
-	//
+	/*
 	// SEE WHICH SAVE GAME FILES ARE AVAILABLE & READ STRING IN
-	//
+	*/
 {
 #if defined(HAVE_FFBLK)
 	struct ffblk f;
@@ -2505,11 +2505,11 @@ void SetupControlPanel()
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Clean up all the Control Panel stuff
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void CleanupControlPanel()
 {
 #ifndef SPEAR
@@ -2522,11 +2522,11 @@ void CleanupControlPanel()
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Handle moving gun around a menu
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 {
 	char key;
@@ -2548,9 +2548,9 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 		PrintY=item_i->y+which*13;
 		US_Print((items+which)->string);
 	}
-	//
+	/*
 	// CALL CUSTOM ROUTINE IF IT IS NEEDED
-	//
+	*/
 	if (routine)
 		routine(which);
 	VW_UpdateScreen();
@@ -2564,9 +2564,9 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 
 	do
 	{
-		//
+		/*
 		// CHANGE GUN SHAPE
-		//
+		*/
 		if (get_TimeCount() > timer)
 		{
 			set_TimeCount(0);
@@ -2588,17 +2588,17 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 
 		CheckPause();
 
-		//
+		/*
 		// SEE IF ANY KEYS ARE PRESSED FOR INITIAL CHAR FINDING
-		//
+		*/
 		key=LastASCII;
 		if (key)
 		{
 			int ok=0;
 
-			//
+			/*
 			// CHECK FOR SCREEN CAPTURE
-			//
+			*/
 			if (IN_KeyDown(sc_Tab) && IN_KeyDown(sc_P) && MS_CheckParm("debugmode"))
 				PicturePause();
 
@@ -2617,9 +2617,9 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 					break;
 				}
 
-			//
+			/*
 			// DIDN'T FIND A MATCH FIRST TIME THRU. CHECK AGAIN.
-			//
+			*/
 			if (!ok)
 			{
 				for (i=0;i<which;i++)
@@ -2634,32 +2634,32 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 			}
 		}
 
-		//
+		/*
 		// GET INPUT
-		//
+		*/
 		ReadAnyControl(&ci);
 		switch(ci.dir)
 		{
-			////////////////////////////////////////////////
+			/*//////////////////////////////////////////////
 			//
 			// MOVE UP
-			//
+			*/
 			case dir_North:
 
 			EraseGun(item_i,items,x,y,which);
 
-			//
+			/*
 			// ANIMATE HALF-STEP
-			//
+			*/
 			if (which && (items+which-1)->active)
 			{
 				y-=6;
 				DrawHalfStep(x,y);
 			}
 
-			//
+			/*
 			// MOVE TO NEXT AVAILABLE SPOT
-			//
+			*/
 			do
 			{
 				if (!which)
@@ -2669,22 +2669,22 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 			} while(!(items+which)->active);
 
 			DrawGun(item_i,items,x,&y,which,basey,routine);
-			//
+			/*
 			// WAIT FOR BUTTON-UP OR DELAY NEXT MOVE
-			//
+			*/
 			TicDelay(20);
 			break;
 
-			////////////////////////////////////////////////
+			/*//////////////////////////////////////////////
 			//
 			// MOVE DOWN
-			//
+			*/
 			case dir_South:
 
 			EraseGun(item_i,items,x,y,which);
-			//
+			/*
 			// ANIMATE HALF-STEP
-			//
+			*/
 			if (which!=item_i->amount-1 && (items+which+1)->active)
 			{
 				y+=6;
@@ -2701,9 +2701,9 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 
 			DrawGun(item_i,items,x,&y,which,basey,routine);
 
-			//
+			/*
 			// WAIT FOR BUTTON-UP OR DELAY NEXT MOVE
-			//
+			*/
 			TicDelay(20);
 			break;
 			
@@ -2722,9 +2722,9 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 
 	IN_ClearKeysDown();
 
-	//
+	/*
 	// ERASE EVERYTHING
-	//
+	*/
 	if (lastitem!=which)
 	{
 		VW_Bar(x-1,y,25,16,BKGDCOLOR);
@@ -2746,9 +2746,9 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 	switch(exit)
 	{
 		case 1:
-			//
+			/*
 			// CALL THE ROUTINE
-			//
+			*/
 			if ((items+which)->routine!=NULL)
 			{
 				ShootSnd();
@@ -2762,13 +2762,13 @@ int HandleMenu(CP_iteminfo *item_i,CP_itemtype *items,void (*routine)(int w))
 			return -1;
 	}
 
-	return 0; // JUST TO SHUT UP THE ERROR MESSAGES!
+	return 0; /* JUST TO SHUT UP THE ERROR MESSAGES! */
 }
 
 
-//
+/*
 // ERASE GUN & DE-HIGHLIGHT STRING
-//
+*/
 void EraseGun(CP_iteminfo *item_i,CP_itemtype *items,int x,int y,int which)
 {
 	VW_Bar(x-1,y,25,16,BKGDCOLOR);
@@ -2781,9 +2781,9 @@ void EraseGun(CP_iteminfo *item_i,CP_itemtype *items,int x,int y,int which)
 }
 
 
-//
+/*
 // DRAW HALF STEP OF GUN TO NEXT POSITION
-//
+*/
 void DrawHalfStep(int x,int y)
 {
 	VWB_DrawPic(x,y,C_CURSOR1PIC);
@@ -2794,9 +2794,9 @@ void DrawHalfStep(int x,int y)
 }
 
 
-//
+/*
 // DRAW GUN AT NEW POSITION
-//
+*/
 void DrawGun(CP_iteminfo *item_i,CP_itemtype *items,int x,int *y,int which,int basey,void (*routine)(int w))
 {
 	VW_Bar(x-1,*y,25,16,BKGDCOLOR);
@@ -2808,20 +2808,20 @@ void DrawGun(CP_iteminfo *item_i,CP_itemtype *items,int x,int *y,int which,int b
 	PrintY=item_i->y+which*13;
 	US_Print((items+which)->string);
 
-	//
+	/*
 	// CALL CUSTOM ROUTINE IF IT IS NEEDED
-	//
+	*/
 	if (routine)
 		routine(which);
 	VW_UpdateScreen();
 	SD_PlaySound(MOVEGUN2SND);
 }
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // DELAY FOR AN AMOUNT OF TICS OR UNTIL CONTROLS ARE INACTIVE
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void TicDelay(int count)
 {
 	ControlInfo ci;
@@ -2833,11 +2833,11 @@ void TicDelay(int count)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // Draw a menu
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void DrawMenu(CP_iteminfo *item_i,CP_itemtype *items)
 {
 	int i,which=item_i->curpos;
@@ -2867,11 +2867,11 @@ void DrawMenu(CP_iteminfo *item_i,CP_itemtype *items)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // SET TEXT COLOR (HIGHLIGHT OR NO)
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void SetMenuTextColor(CP_itemtype *items,int hlight)
 {
 	if (hlight)
@@ -2881,11 +2881,11 @@ void SetMenuTextColor(CP_itemtype *items,int hlight)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // WAIT FOR CTRLKEY-UP OR BUTTON-UP
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void WaitKeyUp(void)
 {
 	ControlInfo ci;
@@ -2895,11 +2895,11 @@ void WaitKeyUp(void)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // READ KEYBOARD, JOYSTICK AND MOUSE FOR INPUT
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void ReadAnyControl(ControlInfo *ci)
 {
 	int mouseactive=0;
@@ -2916,11 +2916,11 @@ void ReadAnyControl(ControlInfo *ci)
 }
 
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // DRAW DIALOG AND CONFIRM YES OR NO TO QUESTION
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 int Confirm(const char *string)
 {
 	int xit=0,x,y,tick=0,whichsnd[2]={ESCPRESSEDSND,SHOOTSND};
@@ -2928,9 +2928,9 @@ int Confirm(const char *string)
 	Message(string);
 	IN_ClearKeysDown();
 
-	//
+	/*
 	// BLINK CURSOR
-	//
+	*/
 	x=PrintX;
 	y=PrintY;
 	set_TimeCount(0);
@@ -2972,11 +2972,11 @@ int Confirm(const char *string)
 	return xit;
 }
 
-////////////////////////////////////////////////////////////////////
+/*//////////////////////////////////////////////////////////////////
 //
 // PRINT A MESSAGE IN A WINDOW
 //
-////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////// */
 void Message(const char *string)
 {
 	word h=0, mw=0;
@@ -3013,11 +3013,11 @@ void FreeMusic()
 	SD_MusicOff();
 }
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 // CHECK FOR PAUSE KEY (FOR MUSIC ONLY)
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void CheckPause()
 {
 	if (Paused)
@@ -3036,11 +3036,11 @@ void CheckPause()
 }
 
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 // DRAW GUN CURSOR AT CORRECT POSITION IN MENU
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void DrawMenuGun(CP_iteminfo *iteminfo)
 {
 	int x, y;
@@ -3052,11 +3052,11 @@ void DrawMenuGun(CP_iteminfo *iteminfo)
 }
 
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 // DRAW SCREEN TITLE STRIPES
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void DrawStripes(int y)
 {
 #ifndef SPEAR
@@ -3074,18 +3074,18 @@ void ShootSnd()
 }
 
 
-///////////////////////////////////////////////////////////////////////////
+/*/////////////////////////////////////////////////////////////////////////
 //
 // CHECK FOR EPISODES
 //
-///////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////// */
 void CheckForEpisodes()
 {
 #if defined(HAVE_FFBLK)
 	struct ffblk f;
-//
+/*
 // ENGLISH
-//
+*/
 #ifndef UPLOAD
 #ifndef SPEAR
 	if (!findfirst("*.wl6", &f, FA_ARCH)) {
@@ -3136,9 +3136,9 @@ void CheckForEpisodes()
 
 	struct _finddata_t f;
 
-//
+/*
 // ENGLISH
-//
+*/
 #ifndef UPLOAD
 #ifndef SPEAR
 	if (_findfirst("*.wl6", &f) != -1)
@@ -3187,9 +3187,9 @@ void CheckForEpisodes()
 
 #else
 	glob_t globbuf;
-//
+/*
 // ENGLISH
-//
+*/
 #ifndef UPLOAD
 #ifndef SPEAR
 	if (glob("*.wl6", 0, NULL, &globbuf) == 0) {

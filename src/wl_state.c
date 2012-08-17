@@ -27,7 +27,7 @@ static dirtype diagonal[9][9] =
 
 void FirstSighting (objtype *ob);
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ===================
@@ -327,10 +327,10 @@ void SelectDodgeDir(objtype *ob)
 
 	if (ob->flags & FL_FIRSTATTACK)
 	{
-	//
+	/*
 	// turning around is only ok the very first time after noticing the
 	// player
-	//
+	*/
 		turnaround = nodir;
 		ob->flags &= ~FL_FIRSTATTACK;
 	}
@@ -340,11 +340,11 @@ void SelectDodgeDir(objtype *ob)
 	deltax = player->tilex - ob->tilex;
 	deltay = player->tiley - ob->tiley;
 
-//
+/*
 // arange 5 direction choices in order of preference
 // the four cardinal directions plus the diagonal straight towards
 // the player
-//
+*/
 
 	if (deltax>0)
 	{
@@ -368,9 +368,9 @@ void SelectDodgeDir(objtype *ob)
 		dirtry[4]= south;
 	}
 
-//
+/*
 // randomize a bit for dodging
-//
+*/
 	absdx = abs(deltax);
 	absdy = abs(deltay);
 
@@ -396,9 +396,9 @@ void SelectDodgeDir(objtype *ob)
 
 	dirtry[0] = diagonal [ dirtry[1] ] [ dirtry[2] ];
 
-//
+/*
 // try the directions util one works
-//
+*/
 	for (i=0;i<5;i++)
 	{
 		if ( dirtry[i] == nodir || dirtry[i] == turnaround)
@@ -409,9 +409,9 @@ void SelectDodgeDir(objtype *ob)
 			return;
 	}
 
-//
+/*
 // turn around only as a last resort
-//
+*/
 	if (turnaround != nodir)
 	{
 		ob->dir = turnaround;
@@ -529,7 +529,7 @@ void SelectChaseDir(objtype *ob)
 		}
 	}
 
-	ob->dir = nodir;		// can't move
+	ob->dir = nodir;		/* can't move */
 }
 
 /*
@@ -597,7 +597,7 @@ void SelectRunDir (objtype *ob)
 		}
 	}
 
-	ob->dir = nodir;		// can't move
+	ob->dir = nodir;		/* can't move */
 }
 
 /*
@@ -657,9 +657,9 @@ void MoveObj (objtype *ob, long move)
 		Quit ("MoveObj: bad dir!");
 	}
 
-//
+/*
 // check to make sure it's not on top of player
-//
+*/
 	if (areabyplayer[ob->areanumber])
 	{
 		deltax = ob->x - player->x;
@@ -672,9 +672,9 @@ void MoveObj (objtype *ob, long move)
 		if (ob->obclass == ghostobj || ob->obclass == spectreobj)
 			TakeDamage (tics*2,ob);
 
-	//
+	/*
 	// back up
-	//
+	*/
 		switch (ob->dir)
 		{
 		case north:
@@ -735,7 +735,7 @@ void KillActor (objtype *ob)
 {
 	int	tilex,tiley;
 
-	tilex = ob->tilex = ob->x >> TILESHIFT;		// drop item on center
+	tilex = ob->tilex = ob->x >> TILESHIFT;		/* drop item on center */
 	tiley = ob->tiley = ob->y >> TILESHIFT;
 
 	switch (ob->obclass)
@@ -886,9 +886,9 @@ void DamageActor (objtype *ob, unsigned damage)
 {
 	madenoise = true;
 
-//
+/*
 // do double damage if shooting a non attack mode actor
-//
+*/
 	if ( !(ob->flags & FL_ATTACKMODE) )
 		damage <<= 1;
 
@@ -899,9 +899,9 @@ void DamageActor (objtype *ob, unsigned damage)
 	else
 	{
 		if (! (ob->flags & FL_ATTACKMODE) )
-			FirstSighting (ob);		// put into combat mode
+			FirstSighting (ob);		/* put into combat mode */
 
-		switch (ob->obclass)		// dogs only have one hit point
+		switch (ob->obclass)		/* dogs only have one hit point */
 		{
 		case guardobj:
 			if (ob->hitpoints&1)
@@ -966,7 +966,7 @@ boolean CheckLine (objtype *ob)
 	int	xfrac,yfrac,deltafrac;
 	word	value,intercept;
 
-	x1 = ob->x >> UNSIGNEDSHIFT;		// 1/256 tile precision
+	x1 = ob->x >> UNSIGNEDSHIFT;		/* 1/256 tile precision */
 	y1 = ob->y >> UNSIGNEDSHIFT;
 	xt1 = x1 >> 8;
 	yt1 = y1 >> 8;
@@ -1019,9 +1019,9 @@ boolean CheckLine (objtype *ob)
 			if (value<128 || value>256)
 				return false;
 
-			//
+			/*
 			// see if the door is open enough
-			//
+			*/
 			value &= ~0x80;
 			intercept = yfrac-ystep/2;
 
@@ -1073,9 +1073,9 @@ boolean CheckLine (objtype *ob)
 			if (value<128 || value>256)
 				return false;
 
-			//
+			/*
 			// see if the door is open enough
-			//
+			*/
 			value &= ~0x80;
 			intercept = xfrac-xstep/2;
 
@@ -1109,15 +1109,15 @@ boolean CheckSight (objtype *ob)
 {
 	long		deltax,deltay;
 
-//
+/*
 // don't bother tracing a line if the area isn't connected to the player's
-//
+*/
 	if (!areabyplayer[ob->areanumber])
 		return false;
 
-//
+/*
 // if the player is real close, sight is automatic
-//
+*/
 	deltax = player->x - ob->x;
 	deltay = player->y - ob->y;
 
@@ -1125,9 +1125,9 @@ boolean CheckSight (objtype *ob)
 	&& deltay > -MINSIGHT && deltay < MINSIGHT)
 		return true;
 
-//
+/*
 // see if they are looking in the right direction
-//
+*/
 	switch (ob->dir)
 	{
 	case north:
@@ -1153,9 +1153,9 @@ boolean CheckSight (objtype *ob)
 		break;
 	}
 
-//
+/*
 // trace a line to check for blocking tiles (corners)
-//
+*/
 	return CheckLine (ob);
 }
 
@@ -1172,128 +1172,128 @@ boolean CheckSight (objtype *ob)
 
 void FirstSighting (objtype *ob)
 {
-//
+/*
 // react to the player
-//
+*/
 	switch (ob->obclass)
 	{
 	case guardobj:
 		PlaySoundLocActor(HALTSND,ob);
 		NewState (ob,s_grdchase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case officerobj:
 		PlaySoundLocActor(SPIONSND,ob);
 		NewState (ob,s_ofcchase1);
-		ob->speed *= 5;			// go faster when chasing player
+		ob->speed *= 5;			/* go faster when chasing player */
 		break;
 
 	case mutantobj:
 		NewState (ob,s_mutchase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case ssobj:
 		PlaySoundLocActor(SCHUTZADSND,ob);
 		NewState (ob,s_sschase1);
-		ob->speed *= 4;			// go faster when chasing player
+		ob->speed *= 4;			/* go faster when chasing player */
 		break;
 
 	case dogobj:
 		PlaySoundLocActor(DOGBARKSND,ob);
 		NewState (ob,s_dogchase1);
-		ob->speed *= 2;			// go faster when chasing player
+		ob->speed *= 2;			/* go faster when chasing player */
 		break;
 
 #ifndef SPEAR
 	case bossobj:
 		SD_PlaySound(GUTENTAGSND);
 		NewState (ob,s_bosschase1);
-		ob->speed = SPDPATROL*3;	// go faster when chasing player
+		ob->speed = SPDPATROL*3;	/* go faster when chasing player */
 		break;
 
 	case gretelobj:
 		SD_PlaySound(KEINSND);
 		NewState (ob,s_gretelchase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case giftobj:
 		SD_PlaySound(EINESND);
 		NewState (ob,s_giftchase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case fatobj:
 		SD_PlaySound(ERLAUBENSND);
 		NewState (ob,s_fatchase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case schabbobj:
 		SD_PlaySound(SCHABBSHASND);
 		NewState (ob,s_schabbchase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case fakeobj:
 		SD_PlaySound(TOT_HUNDSND);
 		NewState (ob,s_fakechase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case mechahitlerobj:
 		SD_PlaySound(DIESND);
 		NewState (ob,s_mechachase1);
-		ob->speed *= 3;			// go faster when chasing player
+		ob->speed *= 3;			/* go faster when chasing player */
 		break;
 
 	case realhitlerobj:
 		SD_PlaySound(DIESND);
 		NewState (ob,s_hitlerchase1);
-		ob->speed *= 5;			// go faster when chasing player
+		ob->speed *= 5;			/* go faster when chasing player */
 		break;
 
 	case ghostobj:
 		NewState (ob,s_blinkychase1);
-		ob->speed *= 2;			// go faster when chasing player
+		ob->speed *= 2;			/* go faster when chasing player */
 		break;
 #else
 
 	case spectreobj:
 		SD_PlaySound(GHOSTSIGHTSND);
 		NewState (ob,s_spectrechase1);
-		ob->speed = 800;			// go faster when chasing player
+		ob->speed = 800;			/* go faster when chasing player */
 		break;
 
 	case angelobj:
 		SD_PlaySound(ANGELSIGHTSND);
 		NewState (ob,s_angelchase1);
-		ob->speed = 1536;			// go faster when chasing player
+		ob->speed = 1536;			/* go faster when chasing player */
 		break;
 
 	case transobj:
 		SD_PlaySound(TRANSSIGHTSND);
 		NewState (ob,s_transchase1);
-		ob->speed = 1536;			// go faster when chasing player
+		ob->speed = 1536;			/* go faster when chasing player */
 		break;
 
 	case uberobj:
 		NewState (ob,s_uberchase1);
-		ob->speed = 3000;			// go faster when chasing player
+		ob->speed = 3000;			/* go faster when chasing player */
 		break;
 
 	case willobj:
 		SD_PlaySound(WILHELMSIGHTSND);
 		NewState (ob,s_willchase1);
-		ob->speed = 2048;			// go faster when chasing player
+		ob->speed = 2048;			/* go faster when chasing player */
 		break;
 
 	case deathobj:
 		SD_PlaySound(KNIGHTSIGHTSND);
 		NewState (ob,s_deathchase1);
-		ob->speed = 2048;			// go faster when chasing player
+		ob->speed = 2048;			/* go faster when chasing player */
 		break;
 
 #endif
@@ -1302,7 +1302,7 @@ void FirstSighting (objtype *ob)
 	}
 
 	if (ob->distance < 0)
-		ob->distance = 0;	// ignore the door opening command
+		ob->distance = 0;	/* ignore the door opening command */
 
 	ob->flags |= FL_ATTACKMODE|FL_FIRSTATTACK;
 }
@@ -1330,13 +1330,13 @@ boolean SightPlayer (objtype *ob)
 
 	if (ob->temp2)
 	{
-	//
+	/*
 	// count down reaction time
-	//
+	*/
 		ob->temp2 -= tics;
 		if (ob->temp2 > 0)
 			return false;
-		ob->temp2 = 0;					// time to react
+		ob->temp2 = 0;					/* time to react */
 	}
 	else
 	{

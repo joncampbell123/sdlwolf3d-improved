@@ -20,7 +20,7 @@ boolean		spearflag;
 static const int ElevatorBackTo[]={ 1, 1, 7, 3, 5, 3};
 #endif
 
-//===========================================================================
+/*===========================================================================*/
 
 /*
 ==========================
@@ -123,23 +123,23 @@ void ScanInfoPlane()
 			case 70:
 			case 71:
 			case 72:
-			case 73:						// TRUCK AND SPEAR!
+			case 73:						/* TRUCK AND SPEAR! */
 			case 74:
 
 				SpawnStatic(x,y,tile-23);
 				break;
 
-//
+/*
 // P wall
-//
+*/
 			case 98:
 				if (!loadedgame)
 				  gamestate.secrettotal++;
 				break;
 
-//
+/*
 // guard
-//
+*/
 			case 180:
 			case 181:
 			case 182:
@@ -186,9 +186,9 @@ void ScanInfoPlane()
 			case 124:
 				SpawnDeadGuard (x,y);
 				break;
-//
+/*
 // officer
-//
+*/
 			case 188:
 			case 189:
 			case 190:
@@ -233,9 +233,9 @@ void ScanInfoPlane()
 				break;
 
 
-//
+/*
 // ss
-//
+*/
 			case 198:
 			case 199:
 			case 200:
@@ -279,9 +279,9 @@ void ScanInfoPlane()
 				SpawnPatrol(en_ss,x,y,tile-130);
 				break;
 
-//
+/*
 // dogs
-//
+*/
 			case 206:
 			case 207:
 			case 208:
@@ -325,9 +325,9 @@ void ScanInfoPlane()
 				SpawnPatrol(en_dog,x,y,tile-138);
 				break;
 
-//
+/*
 // boss
-//
+*/
 #ifndef SPEAR
 			case 214:
 				SpawnBoss (x,y);
@@ -372,9 +372,9 @@ void ScanInfoPlane()
 
 #endif
 
-//
+/*
 // mutants
-//
+*/
 			case 252:
 			case 253:
 			case 254:
@@ -417,9 +417,9 @@ void ScanInfoPlane()
 				SpawnPatrol(en_mutant,x,y,tile-220);
 				break;
 
-//
+/*
 // ghosts
-//
+*/
 #ifndef SPEAR
 			case 224:
 				SpawnGhosts (en_blinky,x,y);
@@ -673,7 +673,7 @@ void StartDemoRecord(int levelnumber)
 	lastdemoptr = demoptr+MAXDEMOSIZE;
 
 	*demoptr = levelnumber;
-	demoptr += 4;				// leave space for length
+	demoptr += 4;				/* leave space for length */
 	demorecord = true;
 }
 
@@ -887,7 +887,7 @@ int PlayDemoFromFile(const char *demoname)
 	return 1;
 }
 
-//==========================================================================
+/*==========================================================================*/
 
 /*
 ==================
@@ -905,7 +905,7 @@ void Died()
 	long	dx,dy;
 	int	iangle,curangle,clockwise,counter,change;
 
-	gamestate.weapon = -1;			// take away weapon
+	gamestate.weapon = -1;			/* take away weapon */
 	SD_PlaySound(PLAYERDEATHSND);
 	
 /* swing around to face attacker (if any) */
@@ -917,7 +917,7 @@ void Died()
 		dy = player->y;
 	}
 	
-	fangle = atan2(dy,dx);			// returns -pi to pi
+	fangle = atan2(dy,dx);			/* returns -pi to pi */
 	if (fangle < 0)
 		fangle = PI*2+fangle;
 
@@ -935,9 +935,9 @@ void Died()
 
 	if (clockwise<counter)
 	{
-	//
+	/*
 	// rotate clockwise
-	//
+	*/
 		if (curangle>iangle)
 			curangle -= ANGLES;
 		do {
@@ -956,9 +956,9 @@ void Died()
 	}
 	else
 	{
-	//
+	/*
 	// rotate counterclockwise
-	//
+	*/
 		if (curangle<iangle)
 			curangle += ANGLES;
 		do
@@ -977,9 +977,9 @@ void Died()
 		} while (curangle != iangle);
 	}
 
-//
+/*
 // fade to red
-//
+*/
 	FinishPaletteShifts();
 
 	FizzleFade(false, 70, 4);
@@ -1011,7 +1011,7 @@ void Died()
 
 }
 
-//==========================================================================
+/*==========================================================================*/
 
 /*
 ===================
@@ -1112,11 +1112,11 @@ startplayloop:
 
 			ClearMemory ();
 
-			LevelCompleted ();		// do the intermission
+			LevelCompleted ();		/* do the intermission */
 #ifdef SPEARDEMO
 			if (gamestate.mapon == 1)
 			{
-				died = true;		// don't "get psyched!"
+				died = true;		/* don't "get psyched!" */
 
 				VW_FadeOut();
 
@@ -1134,15 +1134,15 @@ startplayloop:
 			gamestate.oldscore = gamestate.score;
 
 #ifndef SPEAR
-			//
+			/*
 			// COMING BACK FROM SECRET LEVEL
-			//
+			*/
 			if (gamestate.mapon == 9)
-				gamestate.mapon = ElevatorBackTo[gamestate.episode];	// back from secret
+				gamestate.mapon = ElevatorBackTo[gamestate.episode];	/* back from secret */
 			else
-			//
+			/*
 			// GOING TO SECRET LEVEL
-			//
+			*/
 			if (playstate == ex_secretlevel)
 				gamestate.mapon = 9;
 #else
@@ -1150,9 +1150,9 @@ startplayloop:
 #define FROMSECRET1		3
 #define FROMSECRET2		11
 
-			//
+			/*
 			// GOING TO SECRET LEVEL
-			//
+			*/
 			if (playstate == ex_secretlevel)
 				switch(gamestate.mapon)
 				{
@@ -1160,9 +1160,9 @@ startplayloop:
 				 case FROMSECRET2: gamestate.mapon = 19; break;
 				}
 			else
-			//
+			/*
 			// COMING BACK FROM SECRET LEVEL
-			//
+			*/
 			if (gamestate.mapon == 18 || gamestate.mapon == 19)
 				switch(gamestate.mapon)
 				{
@@ -1171,9 +1171,9 @@ startplayloop:
 				}
 #endif
 			else
-			//
+			/*
 			// GOING TO NEXT LEVEL
-			//
+			*/
 				gamestate.mapon++;
 
 
@@ -1181,10 +1181,10 @@ startplayloop:
 
 		case ex_died:
 			Died();
-			died = true;			// don't "get psyched!"
+			died = true;			/* don't "get psyched!" */
 
 			if (gamestate.lives > -1)
-				break;			// more lives left
+				break;			/* more lives left */
 
 			VW_FadeOut();
 

@@ -822,9 +822,9 @@ int MS_CheckParm(const char *check)
 	for (i = 1; i < _argc; i++) {
 		parm = _argv[i];
 
-		while (!isalpha(*parm))		// skip - / \ etc.. in front of parm
+		while (!isalpha(*parm))		/* skip - / \ etc.. in front of parm */
 			if (!*parm++)
-				break;		// hit end of string without an alphanum
+				break;		/* hit end of string without an alphanum */
 
 		if (!stricmp(check, parm))
 			return i;
@@ -862,10 +862,10 @@ void BuildTables()
 	/* fight off asymptotic behaviour at 90 degrees */
 	finetangent[FINEANGLES/4-1] = finetangent[FINEANGLES/4-2]+1;
 	
-//
+/*
 // costable overlays sintable with a quarter phase shift
 // ANGLES is assumed to be divisable by four
-//
+*/
 
 	angle = 0.0;
 	anglestep = PI/2.0/ANGLEQUAD;
@@ -947,14 +947,14 @@ void NewViewSize(int width)
 	yoffset = (vheight-STATUSLINES*vheight/200-viewheight)/2;
 	xoffset = (vwidth-viewwidth)/2;
 	
-//
+/*
 // calculate trace angles and projection constants
-//
+*/
 	CalcProjection(FOCALLENGTH);
 
 }
 
-//===========================================================================
+/*===========================================================================*/
 
 #ifndef SPEARDEMO
 
@@ -1023,15 +1023,15 @@ static const int songs[] =
 	ULTIMATE_MUS,
 	PACMAN_MUS
 #else
-	XFUNKIE_MUS,             // 0
-	XDEATH_MUS,              // 2
-	XTIPTOE_MUS,             // 4
-	XTHEEND_MUS,             // 7
-	XEVIL_MUS,               // 17
-	XJAZNAZI_MUS,            // 18
-	XPUTIT_MUS,              // 21
-	XGETYOU_MUS,             // 22
-	XTOWER2_MUS              // 23
+	XFUNKIE_MUS,             /* 0 */
+	XDEATH_MUS,              /* 2 */
+	XTIPTOE_MUS,             /* 4 */
+	XTHEEND_MUS,             /* 7 */
+	XEVIL_MUS,               /* 17 */
+	XJAZNAZI_MUS,            /* 18 */
+	XPUTIT_MUS,              /* 21 */
+	XGETYOU_MUS,             /* 22 */
+	XTOWER2_MUS              /* 23 */
 #endif
 };
 		
@@ -1181,9 +1181,9 @@ void InitGame()
 	SD_Startup();
 	US_Startup();
 	
-//
+/*
 // build some tables
-//
+*/
 
 	for (i = 0;i < MAPSIZE; i++)
 	{
@@ -1205,15 +1205,15 @@ void InitGame()
 	NewViewSize(viewsize);
 
 
-//
+/*
 // initialize variables
-//
+*/
 	InitRedShifts();
 
 	IN_CheckAck();
-//
+/*
 // HOLDING DOWN 'M' KEY?
-//
+*/
 #ifndef SPEARDEMO
 	if (IN_KeyDown(sc_M))
 		DoJukebox();
@@ -1233,9 +1233,9 @@ void DemoLoop()
 	static int LastDemo;
 	
 	int i;
-//
+/*
 // main game cycle
-//
+*/
 
 	LastDemo = 0;
 	
@@ -1270,9 +1270,9 @@ void DemoLoop()
 	{
 		while (!NoWait)
 		{
-//
+/*
 // title page
-//
+*/
 			MM_SortMem ();
 #ifdef SPEAR
 			CA_CacheGrChunk (TITLEPALETTE);
@@ -1296,27 +1296,27 @@ void DemoLoop()
 			if (IN_UserInput(TickBase*15))
 				break;
 			VW_FadeOut();
-//
+/*
 // credits page
-//
+*/
 			VL_CacheScreen(CREDITSPIC);
 			VW_UpdateScreen();
 			VW_FadeIn ();
 			if (IN_UserInput(TickBase*10))
 				break;
 			VW_FadeOut ();
-//
+/*
 // high scores
-//
+*/
 			DrawHighScores();
 			VW_UpdateScreen();
 			VW_FadeIn();
 
 			if (IN_UserInput(TickBase*10))
 				break;
-//
+/*
 // demo
-//
+*/
 			#ifndef SPEARDEMO
 			PlayDemo(LastDemo++%4);
 			#else
