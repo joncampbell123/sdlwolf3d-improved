@@ -2,5 +2,5 @@
 Encoding=UTF-8
 Name=Wolfenstein 3D (registered) (SDL port)
 Type=Application
-Exec=sdlwolf3d92
+Exec=sdlwolf3dr92
 Categories=Application;Game;
