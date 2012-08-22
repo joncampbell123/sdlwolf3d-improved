@@ -1,4 +1,5 @@
 #include "wl_def.h" 
+#include <assert.h>
 
 /* C AsmRefresh() and related code
    originally from David Haslam -- dch@sirius.demon.co.uk */
@@ -736,14 +737,20 @@ static void ScaleLineTrans(unsigned int height, byte *source, int x)
 	}
 }
 
-static byte *spritegfx[SPR_TOTAL];
+static byte *spritegfx[SPR_TOTAL] = {NULL};
+
+void Sprite_FreeAll() {
+	size_t i;
+
+	for (i=0;i < SPR_TOTAL;i++) MM_FreePtr((memptr*)(&spritegfx[i]));
+}
 
 static void DeCompileSprite(int shapenum)
 {
 	byte *ptr;
-	byte *buf;
 	byte *cmdptr;
 	byte *pixels;
+	byte *buf = NULL;
 	int yoff;
 	int y, y0, y1;
 	int x, left, right;
@@ -794,6 +801,16 @@ void ScaleShape(int xcenter, int shapenum, unsigned height)
 	unsigned int scaler = (64 << 16) / (height >> 2);
 	unsigned int x;
 	int p;
+
+	/* FIXME:
+	 *   Wolfenstein 3D Registered version Level 3:
+	 *     Triggers "BUG: ScaleShape with out-of-range shapenum (0 < 544173908 < 437)"
+	 *     at the start of the level. Some unknown shapenum is placed right in front
+	 *     of the first door the player sees when starting the level. */
+	if (shapenum < 0 || shapenum >= SPR_TOTAL) {
+		fprintf(stderr,"BUG: ScaleShape with out-of-range shapenum (0 < %d < %d)\n",shapenum,SPR_TOTAL);
+		shapenum = 0; /* make it a visible SOMETHING---in this case the "demo" graphic */
+	}
 
 	if (spritegfx[shapenum] == NULL)
 		DeCompileSprite(shapenum);

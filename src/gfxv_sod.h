@@ -1,12 +1,12 @@
 typedef enum {
-		// Lump Start
+		/* Lump Start */
 		C_BACKDROPPIC=3,
 		C_MOUSELBACKPIC,                     // 4
 		C_CURSOR1PIC,                        // 5
 		C_CURSOR2PIC,                        // 6
 		C_NOTSELECTEDPIC,                    // 7
 		C_SELECTEDPIC,                       // 8
-		// Lump Start
+		/* Lump Start */
 		C_CUSTOMIZEPIC,                      // 9
 		C_JOY1PIC,                           // 10
 		C_JOY2PIC,                           // 11
@@ -14,33 +14,33 @@ typedef enum {
 		C_JOYSTICKPIC,                       // 13
 		C_KEYBOARDPIC,                       // 14
 		C_CONTROLPIC,                        // 15
-		// Lump Start
+		/* Lump Start */
 		C_OPTIONSPIC,                        // 16
-		// Lump Start
+		/* Lump Start */
 		C_FXTITLEPIC,                        // 17
 		C_DIGITITLEPIC,                      // 18
 		C_MUSICTITLEPIC,                     // 19
-		// Lump Start
+		/* Lump Start */
 		C_HOWTOUGHPIC,                       // 20
 		C_BABYMODEPIC,                       // 21
 		C_EASYPIC,                           // 22
 		C_NORMALPIC,                         // 23
 		C_HARDPIC,                           // 24
-		// Lump Start
+		/* Lump Start */
 		C_DISKLOADING1PIC,                   // 25
 		C_DISKLOADING2PIC,                   // 26
 		C_LOADGAMEPIC,                       // 27
 		C_SAVEGAMEPIC,                       // 28
-		// Lump Start
+		/* Lump Start */
 		HIGHSCORESPIC,                       // 29
 		C_WONSPEARPIC,                       // 30
-		// Lump Start
+		/* Lump Start */
 		BJCOLLAPSE1PIC,                      // 31
 		BJCOLLAPSE2PIC,                      // 32
 		BJCOLLAPSE3PIC,                      // 33
 		BJCOLLAPSE4PIC,                      // 34
 		ENDPICPIC,                           // 35
-		// Lump Start
+		/* Lump Start */
 		L_GUYPIC,                            // 36
 		L_COLONPIC,                          // 37
 		L_NUM0PIC,                           // 38

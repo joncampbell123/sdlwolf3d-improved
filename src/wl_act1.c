@@ -9,7 +9,7 @@
 */
 
 
-statobj_t statobjlist[MAXSTATS], *laststatobj;
+statobj_t statobjlist[MAXSTATS] = { {0} }, *laststatobj;
 
 struct
 {
@@ -118,6 +118,19 @@ void InitStaticList()
 
 void SpawnStatic(int tilex, int tiley, int type)
 {
+	/* FIX: Wolfenstein 3D Registered 1992 version Level 3.
+	 *      For whatever reason this is called to create a static item of type == 50
+	 *      directly in front of the door the player is facing on spawn. Without this
+	 *      fix we get a shapenum that is WAAAYY out of range depending on whatever
+	 *      random data happens to exist just past the array.
+	 *
+	 *      See also wl_draw.c ScaleShape() */
+	if (type < 0 || type >= (int)(sizeof(statinfo)/sizeof(statinfo[0]))) {
+		fprintf(stderr,"BUG: SpawnStatic() type out of range (0 < %d < %d)\n",
+			type,(int)(sizeof(statinfo)/sizeof(statinfo[0])));
+		return;
+	}
+
 	laststatobj->shapenum = statinfo[type].picnum;
 	laststatobj->tilex = tilex;
 	laststatobj->tiley = tiley;

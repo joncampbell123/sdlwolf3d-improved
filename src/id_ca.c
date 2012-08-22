@@ -18,10 +18,10 @@ static word RLEWtag;
 
 int mapon;
 
-word	*mapsegs[MAPPLANES];
-maptype	*mapheaderseg[NUMMAPS];
-byte	*audiosegs[NUMSNDCHUNKS];
-byte	*grsegs[NUMCHUNKS];
+word	*mapsegs[MAPPLANES] = {NULL};
+maptype	*mapheaderseg[NUMMAPS] = {NULL};
+byte	*audiosegs[NUMSNDCHUNKS] = {NULL};
+byte	*grsegs[NUMCHUNKS] = {NULL};
 
 char extension[5];
 #define gheadname "vgahead."
@@ -35,6 +35,7 @@ char extension[5];
 
 static int32_t *grstarts;	/* array of offsets in vgagraph */
 static int32_t *audiostarts; /* array of offsets in audiot */
+static size_t audiostarts_max = 0;
 
 static huffnode grhuffman[256];
 
@@ -306,9 +307,9 @@ void CA_RLEWexpand(const word *source, word *dest, long length, word rlewtag)
 
 static void CAL_SetupGrFile()
 {
+	byte *grtemp = NULL;
 	char fname[13];
 	int handle;
-	byte *grtemp;
 	int i;
 
 /* load vgadict.ext (huffman dictionary for graphics files) */
@@ -327,7 +328,7 @@ static void CAL_SetupGrFile()
 	CloseRead(handle);
 	
 /* load the data offsets from vgahead.ext */
-	MM_GetPtr((memptr)&grstarts, (NUMCHUNKS+1)*4);
+	MM_GetPtr((memptr)&grstarts, (NUMCHUNKS+1)*sizeof(int32_t));
 	MM_GetPtr((memptr)&grtemp, (NUMCHUNKS+1)*3);
 	
 	strcpy(fname, gheadname);
@@ -467,6 +468,7 @@ static void CAL_SetupAudioFile()
 	for (i = 0; i < (length/4); i++)
 		audiostarts[i] = ReadInt32(handle);
 
+	audiostarts_max = length / 4;
 	CloseRead(handle);	
 
 /* open the data file */
@@ -530,6 +532,11 @@ void CA_Shutdown()
 void CA_CacheAudioChunk(int chunk)
 {
 	int pos, length;
+
+	if (chunk < 0 || chunk >= (int)audiostarts_max) {
+		fprintf(stderr,"CA_CacheAudioChunk() chunk out of range (0 < %d < %d)\n",chunk,audiostarts_max);
+		return;
+	}
 
 	if (audiosegs[chunk])
 		return;	
@@ -633,10 +640,15 @@ static void CAL_ExpandGrChunk(int chunk, const byte *source)
 void CA_CacheGrChunk(int chunk)
 {
 	long pos, compressed;
-	byte *source;
+	byte *source = NULL;
 
 	if (grhandle == -1)
 		return;
+
+	if (chunk < 0 || chunk >= NUMCHUNKS) {
+		fprintf(stderr,"CA_CacheGrChunk() chunk number out of range (0 < %d < %d)\n",chunk,NUMCHUNKS);
+		Quit("CA_CacheGrChunk() chunk number out of range");
+	}
 		
 	if (grsegs[chunk]) {
 		return;
@@ -665,8 +677,6 @@ void CA_UnCacheGrChunk(int chunk)
 	}
 	
 	MM_FreePtr((memptr)&grsegs[chunk]);
-	
-	grsegs[chunk] = NULL;
 }
 	
 /* ======================================================================== */
@@ -697,11 +707,12 @@ void CA_CacheMap(int mapnum)
 		compressed = mapheaderseg[mapnum]->planelength[plane];
 
 		ReadSeek(maphandle, pos, SEEK_SET);
-		
-		MM_GetPtr((void *)&source, compressed);
+
+		source = NULL; MM_GetPtr((void *)&source, compressed);
 
 		ReadBytes(maphandle, (byte *)source, compressed);
-		
+
+		buffer2seg = NULL;
 		expanded = source[0] | (source[1] << 8);		
 		MM_GetPtr(&buffer2seg, expanded);
 
@@ -733,14 +744,15 @@ void MM_Shutdown()
 
 void MM_GetPtr(memptr *baseptr, unsigned long size)
 {
-	/* add some sort of linked list for purging */
-	*baseptr = malloc(size);
+	/* we want to help eliminate possible allocations over existing pointers */
+	if (*baseptr != NULL) fprintf(stderr,"WARNING: MM_GetPtr() when *baseptr = %p\n",*baseptr);
+	if ((*baseptr = malloc(size)) != NULL) memset(*baseptr,0,size);
 }
 
 void MM_FreePtr(memptr *baseptr)
 {
-	/* add some sort of linked list for purging, etc */
 	free(*baseptr);
+	*baseptr = NULL;
 }
 
 void MM_SetPurge(memptr *baseptr, int purge)
@@ -760,7 +772,7 @@ static boolean PMStarted;
 static int PageFile = -1;
 int ChunksInFile, PMSpriteStart, PMSoundStart;
 
-PageListStruct *PMPages;
+PageListStruct *PMPages = NULL;
 
 static void PML_ReadFromFile(byte *buf, long offset, word length)
 {
@@ -879,3 +891,15 @@ void PM_Shutdown()
 
 	PML_ClosePageFile();
 }
+
+void IDCA_FreeAll() {
+	size_t i;
+
+	for (i=0;i < MAPPLANES;i++) MM_FreePtr((memptr*)(&mapsegs[i]));
+	for (i=0;i < NUMMAPS;i++) MM_FreePtr((memptr*)(&mapheaderseg[i]));
+	for (i=0;i < NUMSNDCHUNKS;i++) MM_FreePtr((memptr*)(&audiosegs[i]));
+	for (i=0;i < NUMCHUNKS;i++) MM_FreePtr((memptr*)(&grsegs[i]));
+	MM_FreePtr((memptr*)(&audiostarts));
+	MM_FreePtr((memptr*)(&grstarts));
+}
+

@@ -54,9 +54,9 @@ static int leftchannel, rightchannel;
 
 static volatile boolean SoundPositioned;
 
-static word *DigiList;
+static word *DigiList = NULL;
 
-static volatile boolean SD_Started;
+static volatile boolean SD_Started = 0;
 static volatile int audiofd = -1;
 
 static volatile int NextSound;
@@ -77,7 +77,7 @@ static volatile int NewMusic;
 static volatile int NewAdlib;
 static volatile int AdlibPlaying;
 
-static pthread_t hSoundThread;
+static pthread_t hSoundThread = -1;
 
 static int CurDigi;
 static int CurAdlib;
@@ -156,8 +156,8 @@ static void *SoundThread(void *data)
 				
 				AdlibBlock = ((AdlibSnd->block & 7) << 2) | 0x20;
 				AdlibData = (byte *)&AdlibSnd->data;
-				AdlibLength = AdlibSnd->common.length*5;
-				/*OPLWrite(OPL, 0xB0, AdlibBlock);*/
+				AdlibLength = AdlibSnd->common.length*5 - 1;
+				OPLWrite(OPL, 0xB0, AdlibBlock);
 				NewAdlib = -1;
 			}
 			
@@ -170,10 +170,20 @@ static void *SoundThread(void *data)
 			for (i = 0; i < 4; i++) {
 				if (sqActive) {
 					while (MusicCount <= 0) {
+						/* JMC HACK: Either this code is off by 16 bytes or Wolfenstein 3D music blocks
+						 *           have 16 bytes of junk at the end. On most music, the end data will
+						 *           cause this code to write 0x00 to register 0x01, forcing all voices
+						 *           to the sine wave and making the Adlib sound effects sound wrong
+						 *           right after the music loops */
 						dat = *MusicData++;
 						MusicCount = *MusicData++;
 						MusicLength -= 4;
-						OPLWrite(OPL, dat & 0xFF, dat >> 8);
+						if (dat == 0 || (dat&0xFF) == 0x01) {
+							/* no writing to WSE and test register or to register zero! */
+						}
+						else {
+							OPLWrite(OPL, dat & 0xFF, dat >> 8);
+						}
 					}
 					if (MusicLength <= 0) {
 						NewMusic = 1;
@@ -182,15 +192,20 @@ static void *SoundThread(void *data)
 				}
 
 				if (AdlibPlaying != -1) {
-					if (AdlibLength == 0) {
-						/*OPLWrite(OPL, 0xB0, AdlibBlock); */
-					} else if (AdlibLength == -1) {
+					if (AdlibLength <= -1) {
 						OPLWrite(OPL, 0xA0, 00);
-						OPLWrite(OPL, 0xB0, AdlibBlock);
+						OPLWrite(OPL, 0xB0, AdlibBlock & (~0x20));
 						AdlibPlaying = -1;
-					} else if ((AdlibLength % 5) == 0) {
+					} else if ((AdlibLength % 5) == 4) {
+						/* JMC HACK: I dunno what the programmer was doing with AdlibBlock & ~2,
+						 *           that would only cut the F-number range in half, right?
+						 *
+						 *           I noticed that *AdlibData actually tends to vary to and from
+						 *           zero. When I added this code, the Adlib sound effects rendered
+						 *           correctly instead of sounding incomplete. Perhaps the OPL2
+						 *           chipset considers F-Number == 0 the same as clearing the KEY bit? */
 						OPLWrite(OPL, 0xA0, *AdlibData);
-						OPLWrite(OPL, 0xB0, AdlibBlock & ~2);
+						OPLWrite(OPL, 0xB0, AdlibBlock & ~(*AdlibData == 0 ? 0x20/*KEY*/ : 0x00));
 						AdlibData++;
 					}
 					AdlibLength--;
@@ -267,7 +282,7 @@ static void *SoundThread(void *data)
 
 static void Blah()
 {
-        memptr  list;
+        memptr  list = NULL;
         word    *p, pg;
         int     i;
 
@@ -304,54 +319,63 @@ void SD_Startup()
 	audiofd = open("/dev/dsp", O_WRONLY);
 	if (audiofd == -1) {
 		perror("open(\"/dev/dsp\")");
+		SD_Shutdown();
 		return;
 	}
-	
+
 	set = (8 << 16) | 10;
 	if (ioctl(audiofd, SNDCTL_DSP_SETFRAGMENT, &set) == -1) {
 		perror("ioctl SNDCTL_DSP_SETFRAGMENT");
+		SD_Shutdown();
 		return;
 	}
-	
+
 	want = set = AFMT_S16_LE;
 	if (ioctl(audiofd, SNDCTL_DSP_SETFMT, &set) == -1) {
 		perror("ioctl SNDCTL_DSP_SETFMT");
+		SD_Shutdown();
 		return;
 	}
 	if (want != set) {
 		fprintf(stderr, "Format: Wanted %d, Got %d\n", want, set);
+		SD_Shutdown();
 		return;
 	}
-	
+
 	want = set = 1;
 	if (ioctl(audiofd, SNDCTL_DSP_STEREO, &set) == -1) {
 		perror("ioctl SNDCTL_DSP_STEREO");
+		SD_Shutdown();
 		return;
 	}
 	if (want != set) {
 		fprintf(stderr, "Stereo: Wanted %d, Got %d\n", want, set);
+		SD_Shutdown();
 		return;
 	}
-	
+
 	want = set = 44100;
 	if (ioctl(audiofd, SNDCTL_DSP_SPEED, &set) == -1) {
 		perror("ioctl SNDCTL_DSP_SPEED");
+		SD_Shutdown();
 		return;
 	}
 	if (want != set) {
 		fprintf(stderr, "Speed: Wanted %d, Got %d\n", want, set);
+		SD_Shutdown();
 		return;
 	}
-	
+
 	if (ioctl(audiofd, SNDCTL_DSP_GETOSPACE, &info) == -1) {
 		perror("ioctl SNDCTL_DSP_GETOSPACE");
+		SD_Shutdown();
 		return;
 	}
 	printf("Fragments: %d\n", info.fragments);
 	printf("FragTotal: %d\n", info.fragstotal);
 	printf("Frag Size: %d\n", info.fragsize);
 	printf("Bytes    : %d\n", info.bytes);
-	
+
 	NextSound = -1;
 	SoundPlaying = -1;
 	CurDigi = -1;
@@ -360,30 +384,37 @@ void SD_Startup()
 	NewMusic = -1;
 	AdlibPlaying = -1;
 	sqActive = false;
-	
+
 	SD_Started = true;
-	
+
 	if (pthread_create(&hSoundThread, NULL, SoundThread, NULL) != 0) {
-		SD_Started = false;
-		
 		perror("pthread_create");
+		SD_Shutdown();
 		return;
 	}
 }
 
 void SD_Shutdown()
 {
-	if (!SD_Started)
-		return;
+	fprintf(stderr,"SD_Shutdown() SD_Started=%u\n",SD_Started);
+	if (SD_Started) {
+		fprintf(stderr,"SD_Shutdown() in progress\n");
+		SD_MusicOff();
+		SD_StopSound();
+		SD_Started = false;
+	}
 
-	SD_MusicOff();
-	SD_StopSound();
+	/* unlike the original codebase, wait for the thread to stop */
+	if (hSoundThread != -1) {
+		pthread_join(hSoundThread,NULL);
+		hSoundThread = -1;
+	}
 
-	SD_Started = false;
-	
-	if (audiofd != -1)
-		close(audiofd);
+	if (OPL != NULL) OPLDestroy(OPL);
+	OPL = NULL;
+	if (audiofd != -1) close(audiofd);
 	audiofd = -1;
+	MM_FreePtr((memptr*)(&DigiList));
 }
 
 /*/////////////////////////////////////////////////////////////////////////

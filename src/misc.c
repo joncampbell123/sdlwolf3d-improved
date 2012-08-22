@@ -181,7 +181,8 @@ void DisplayTextSplash(const byte *text, int l)
 	for (x = 0; x < l; x++) {
 		for (i = 0; i < 160; i += 2) {
 			put_dos2ansi(text[160*x+i+2]);
-			if (text[160*x+i+1] && text[160*x+i+1] != 160)
+			/* TODO: If the locale is UTF-8 then translate to UTF-8 */
+			if (text[160*x+i+1] && text[160*x+i+1] < 128)
 				printf("%c", text[160*x+i+1]);
 			else
 				printf(" ");

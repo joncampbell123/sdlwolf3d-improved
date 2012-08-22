@@ -911,13 +911,15 @@ void PreloadGraphics()
 void DrawHighScores()
 {
 	char buffer[16];
-	char buffer1[16], *str;
+	char buffer1[16];
+#ifndef SPEAR
+	char *str = NULL;
+#endif
 	word i, w, h;
 	HighScore *s;
 	
 	buffer1[0] = 0;
-	str = 0;
-	
+
 #ifndef SPEAR
 	CA_CacheGrChunk(HIGHSCORESPIC);
 	CA_CacheGrChunk(STARTFONT);

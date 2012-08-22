@@ -566,6 +566,11 @@ void CacheLayoutGraphics()
 
 	} while (text<bombpoint);
 
+	fprintf(stderr,"CacheLayoutGraphics: Reached bombpoint. %p/%p\n",textstart,text);
+	fprintf(stderr,"Article: ");
+	fwrite(textstart,(size_t)(text - textstart),1,stderr);
+	fprintf(stderr,"\n");
+
 	Quit ("CacheLayoutGraphics: No ^E to terminate file!");
 }
 

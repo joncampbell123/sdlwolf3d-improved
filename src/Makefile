@@ -26,6 +26,9 @@ endif
 
 MORE_CFLAGS += -DWMODE=$(WMODE)
 
+# DEBUG
+MORE_CFLAGS += -g3 -O0 -fno-omit-frame-pointer
+
 CFLAGS = -g0 -Os -Wall -fomit-frame-pointer -pedantic $(MORE_CFLAGS)
 OBJS = $(SUBDIR)/objs.o $(SUBDIR)/misc.o $(SUBDIR)/id_ca.o $(SUBDIR)/id_vh.o $(SUBDIR)/id_us.o \
 	$(SUBDIR)/wl_act1.o $(SUBDIR)/wl_act2.o $(SUBDIR)/wl_act3.o $(SUBDIR)/wl_agent.o $(SUBDIR)/wl_game.o \

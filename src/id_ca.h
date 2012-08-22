@@ -75,4 +75,6 @@ void PM_FreePage(int pagenum);
 void PM_Startup();
 void PM_Shutdown();
 
+void IDCA_FreeAll();
+
 #endif

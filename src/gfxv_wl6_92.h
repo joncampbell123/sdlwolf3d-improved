@@ -187,7 +187,7 @@ typedef enum {
 //
 // Amount of each data item
 //
-#define NUMCHUNKS    149
+#define NUMCHUNKS    159
 #define NUMFONT      2
 #define NUMPICS      141
 #define NUMTILE8     35

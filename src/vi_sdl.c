@@ -1,6 +1,7 @@
 #include "wl_def.h"
 
 #include "SDL.h"
+#include <unistd.h>
 
 #define	JoyScaleMax		32768
 #define	JoyScaleShift	8
@@ -37,7 +38,7 @@ int main (int argc, char *argv[])
 	return WolfMain(argc, argv);
 }
 
-void DisplayTextSplash(byte *text);
+void DisplayTextSplash(byte *text, int l);
 
 /*
 ==========================
@@ -51,6 +52,7 @@ void Quit(const char *error)
 {
 	memptr screen = NULL;
 
+	fprintf(stderr,"Quit() shutdown beginning\n");
 	if (!error || !*error) {
 		CA_CacheGrChunk(ORDERSCREEN);
 		screen = grsegs[ORDERSCREEN];
@@ -61,15 +63,14 @@ void Quit(const char *error)
 	}
 	
 	ShutdownId();
-	
-	if (screen) {
-		/*DisplayTextSplash(screen);*/
-	}
-	
+	if (screen && isatty(1)) DisplayTextSplash(screen,25);
+
+	IDCA_FreeAll();
 	if (error && *error) {
 		fprintf(stderr, "Quit: %s\n", error);
 		exit(EXIT_FAILURE);
  	}
+	fprintf(stderr,"Quit() shutdown complete\n");
 	exit(EXIT_SUCCESS);
 }
 

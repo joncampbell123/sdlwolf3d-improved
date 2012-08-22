@@ -131,7 +131,7 @@ void VL_CacheScreen(int chunk)
 
 void VL_DeModeXize(byte *buf, int width, int height)
 {
-	byte *mem, *ptr, *destline;
+	byte *mem = NULL, *ptr, *destline;
 	int plane, x, y;
 	
 	if (width & 3) {
@@ -139,7 +139,7 @@ void VL_DeModeXize(byte *buf, int width, int height)
 		return;
 	}
 	
-	MM_GetPtr((memptr)&mem, width * height);
+	MM_GetPtr((memptr*)(&mem), width * height);
 	
 	ptr = buf;
 
@@ -154,7 +154,7 @@ void VL_DeModeXize(byte *buf, int width, int height)
 
 	memcpy(buf, mem, width * height);
 	
-	MM_FreePtr((memptr)&mem);
+	MM_FreePtr((memptr*)&mem);
 }
 
 /*

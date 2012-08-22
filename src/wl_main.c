@@ -1122,6 +1122,8 @@ void DoJukebox()
 ==========================
 */
 
+void Sprite_FreeAll(); /* wl_draw.c */
+
 void ShutdownId()
 {
 	US_Shutdown();
@@ -1131,6 +1133,7 @@ void ShutdownId()
 	CA_Shutdown();
 	PM_Shutdown();
 	MM_Shutdown();
+	Sprite_FreeAll();
 }
 
 /*
@@ -1230,14 +1233,14 @@ void InitGame()
 
 void DemoLoop()
 {
-	static int LastDemo;
+#ifndef SPEARDEMO
+	static int LastDemo = 0;
+#endif
 	
 	int i;
 /*
 // main game cycle
 */
-
-	LastDemo = 0;
 	
 	StartCPMusic(INTROSONG);
 
