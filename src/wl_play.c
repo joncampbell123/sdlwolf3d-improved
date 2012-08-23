@@ -1223,6 +1223,7 @@ void PlayLoop()
 			DoActor(obj);
 		
 		UpdatePaletteShifts();
+		SD_Idle();
 
 		ThreeDRefresh();
 

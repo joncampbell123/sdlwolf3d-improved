@@ -14,6 +14,8 @@ static unsigned wallheight[MAXVIEWWIDTH];
 /* refresh variables */
 fixed viewx, viewy;		/* the focal point */
 
+unsigned char EnableFloorCeilTexture = 0;
+
 static int viewangle;
 
 static unsigned tilehit;
@@ -648,14 +650,12 @@ void ThreeDRefresh()
 /* clear out the traced array */
 	memset(spotvis, 0, sizeof(spotvis));
 
-#ifndef DRAWCEIL	
-	ClearScreen();
-#endif	
+	if (!EnableFloorCeilTexture)
+		ClearScreen();
 
 	WallRefresh();
-#ifdef DRAWCEIL
-	DrawPlanes();  /* silly floor/ceiling drawing */
-#endif
+	if (EnableFloorCeilTexture)
+		DrawPlanes();  /* silly floor/ceiling drawing */
 
 /* draw all the scaled images */
 	DrawScaleds();		/* draw scaled stuff */

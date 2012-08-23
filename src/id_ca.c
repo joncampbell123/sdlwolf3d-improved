@@ -849,8 +849,10 @@ memptr PM_GetPage(int pagenum)
 {
 	PageListStruct *page;
 	
-	if (pagenum >= ChunksInFile)
+	if ((unsigned int)pagenum >= (unsigned int)ChunksInFile) {
+		fprintf(stderr,"PM_GetPage() invalid request for page %d/%d\n",pagenum,ChunksInFile);
 		Quit("PM_GetPage: Invalid page request");
+	}
 
 	page = &PMPages[pagenum];
 	if (page->addr == NULL) {

@@ -16,6 +16,11 @@
 
 #define PACKED __attribute__((packed))
 
+/* this hacked version allows multiple simultaneous sound effects,
+ * but makes it an option, so you can have the traditional one-sound-fx-at-a-time
+ * mode you're probably used to */
+#define MAX_ALT_FX		12
+
 typedef	struct {
 	longword length;
 	word priority;
@@ -49,25 +54,154 @@ SDSMode DigiMode;
 
 static volatile boolean sqActive;
 
-static fixed globalsoundx, globalsoundy;
-static int leftchannel, rightchannel;
-
-static volatile boolean SoundPositioned;
-
 static word *DigiList = NULL;
+
+/* JMC: Options! */
+/* --Option: Enable multiple simultaneous sound effects at once.
+ *           If disabled, this code behaves like the original Wolfenstein 3D sound code
+ *           and only permits one digital sound effect at once. */
+unsigned char multiple_fx = 1;
+/* --Option: Enable diminishing positional sound effects by distance.
+ *           If disabled, only the 2D "panning" effects apply. */
+unsigned char EnableVolumeByDistance = 1;
 
 static volatile boolean SD_Started = 0;
 static volatile int audiofd = -1;
 
-static volatile int NextSound;
-static volatile int SoundPlaying;
-static volatile int SoundPlayPos;
-static volatile int SoundPlayLen;
-static volatile int SoundPage;
-static volatile int SoundLen;
-static volatile int L;
-static volatile int R;
-static byte *SoundData;
+typedef struct SoundPlaybackState {
+	byte*		data;		/* must remain valid until sound thread is finished! */
+	unsigned int	PlayPos;	/* NTS: 16.16 fixed point! */
+	unsigned int	PlayLen;	/* in samples */
+	unsigned int	PlayRate;	/* NTS: 16.16 fixed point, (1 << 16) = 1.0 */
+} SoundPlaybackState;
+
+typedef struct SoundPlaybackChannel {
+	SoundPlaybackState	s[CHUNKS_PER_CHANNEL];
+	int			soundpage;
+	word			digiindex;
+	word			soundpage_remaining_samples;
+	unsigned char		positional;
+	fixed			posx,posy;
+	soundnames		soundname;
+	word			priority;
+	signed char		active;	/* -1 inactive  0..3 sound chunks */
+	unsigned char		L,R;		/* positional audio (0...15) */
+} SoundPlaybackChannel;
+
+/* this is called from main thread */
+void SoundFxCh_Idle(SoundPlaybackChannel *c) {
+	SoundPlaybackState *s;
+	unsigned int i;
+
+	if (c->active < 0)
+		return;
+
+	/* NTS: OneBlock() will set data == NULL when it's done with the block */
+	i = c->active;
+	s = &c->s[i];
+	if (s->data != NULL) {
+		if (++i >= CHUNKS_PER_CHANNEL) i = 0;
+		s = &c->s[i];
+	}
+
+	/* find a chunk and fill it */
+	if (s->data == NULL && c->soundpage >= 0) {
+		if (c->soundpage_remaining_samples == 0) {
+			/* the end */
+			s->PlayRate = 0;
+			c->soundpage = -1;
+		}
+		else {
+			s->PlayLen = (c->soundpage_remaining_samples > 4096 ? 4096 : c->soundpage_remaining_samples);
+			c->soundpage_remaining_samples -= s->PlayLen;
+			s->data = PM_GetSoundPage(++c->soundpage);
+		}
+	}
+}
+
+void SoundFxCh_ReInit(SoundPlaybackChannel *c) {
+	c->active = -1;
+	c->priority = 0;
+	c->soundpage = -1;
+	c->positional = 0;
+}
+
+void SoundFxCh_BeginStreamingPages(SoundPlaybackChannel *c,word soundname) {
+	unsigned int i;
+
+	c->priority = ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+soundname])->priority;
+	c->soundname = soundname;
+	c->digiindex = DigiMap[c->soundname];
+	c->soundpage = DigiList[c->digiindex*2];
+	c->soundpage_remaining_samples = DigiList[(c->digiindex*2)+1];
+	for (i=0;i < CHUNKS_PER_CHANNEL;i++) {
+		c->s[i].PlayRate = 10402; /* 7000 / 44100 * 65536 */
+		c->s[i].data = NULL;
+		c->s[i].PlayPos = 0;
+		c->s[i].PlayLen = 0;
+	}
+	c->s[0].PlayLen = (c->soundpage_remaining_samples > 4096 ? 4096 : c->soundpage_remaining_samples);
+	c->soundpage_remaining_samples -= c->s[0].PlayLen;
+	c->s[0].data = PM_GetSoundPage(c->soundpage);
+	c->L = c->R = 8;
+	c->active = 0;
+}
+
+/* NTS: This is called from sound thread! */
+void SoundFxCh_OneBlock(SoundPlaybackChannel *c,int16_t *blk,unsigned int cnt) {
+	unsigned int excess = 0;
+
+	if (c->active < 0)
+		return;
+
+	do {
+		SoundPlaybackState *s = &c->s[c->active];
+
+		if (s->data == NULL) {
+			if (s->PlayRate == 0) {
+				/* the section with PlayRate == 0 is the EOS */
+				c->priority = 0;
+				c->active = -1;
+			}
+
+			break;
+		}
+
+		if (cnt == 0) break;
+
+		s->PlayPos += excess;
+		excess = 0;
+
+		while ((s->PlayPos>>16) < s->PlayLen) {
+			int l = (int)blk[0],r = (int)blk[1];
+			int ss = ((int)s->data[s->PlayPos>>16] - 0x80) << 8;
+
+			l += (ss*(16-c->L))>>5;
+			if (l > 32767) blk[0] = 32767;
+			else if (l < -32768) blk[0] = -32768;
+			else blk[0] = (int16_t)l;
+			r += (ss*(16-c->R))>>5;
+			if (r > 32767) blk[1] = 32767;
+			else if (r < -32768) blk[1] = -32768;
+			else blk[1] = (int16_t)r;
+
+			blk += 2;
+			s->PlayPos += s->PlayRate;
+			if (--cnt == 0) break;
+		}
+
+		if ((s->PlayPos>>16) >= s->PlayLen) {
+			excess += s->PlayPos - (s->PlayLen<<16UL);
+			s->data = NULL;
+			s->PlayLen = 0;
+			s->PlayPos = 0;
+			if (++c->active >= CHUNKS_PER_CHANNEL) c->active = 0;
+		}
+	} while (1);
+}
+
+static SoundPlaybackChannel SoundFxCh;
+static SoundPlaybackChannel SoundFxAlt[MAX_ALT_FX];
 
 static FM_OPL *OPL;
 
@@ -78,36 +212,27 @@ static volatile int NewAdlib;
 static volatile int AdlibPlaying;
 
 static pthread_t hSoundThread = -1;
+static pthread_mutex_t hSoundThreadMutex = PTHREAD_MUTEX_INITIALIZER;
 
 static int CurDigi;
 static int CurAdlib;
-
-static boolean SPHack;
 
 static short int sndbuf[512];
 static short int musbuf[256];
 
 static void *SoundThread(void *data)
 {
-	int i, snd;
-	short int samp;
-	int MusicLength;
-	int MusicCount;
-	word *MusicData;
+	int i;
+	int MusicLength = 0;
+	int MusicCount = 0;
+	word *MusicData = NULL;
 	word dat;
 	
 	AdLibSound *AdlibSnd;
-	byte AdlibBlock;
-	byte *AdlibData;
-	int AdlibLength;
+	byte AdlibBlock = 0;
+	byte *AdlibData = NULL;
+	int AdlibLength = -1;
 	Instrument *inst;
-	
-	MusicLength = 0;
-	MusicCount = 0;
-	MusicData = NULL;
-	AdlibBlock = 0;
-	AdlibData = NULL;
-	AdlibLength = -1;
 
 	OPLWrite(OPL, 0x01, 0x20); /* Set WSE=1 */
 	OPLWrite(OPL, 0x08, 0x00); /* Set CSM=0 & SEL=0 */
@@ -115,6 +240,7 @@ static void *SoundThread(void *data)
 /* Yeah, one day I'll rewrite this... */
 	
 	while (SD_Started) {
+		pthread_mutex_lock(&hSoundThreadMutex);
 		if (audiofd != -1) {
 			if (NewAdlib != -1) {
 				AdlibPlaying = NewAdlib;
@@ -160,7 +286,6 @@ static void *SoundThread(void *data)
 				OPLWrite(OPL, 0xB0, AdlibBlock);
 				NewAdlib = -1;
 			}
-			
 			if (NewMusic != -1) {
 				NewMusic = -1;
 				MusicLength = Music->length;
@@ -212,70 +337,19 @@ static void *SoundThread(void *data)
 				}
 
 				YM3812UpdateOne(OPL, &musbuf[i*64], 64);
-			} 
-			if (NextSound != -1) {
-				SoundPlaying = NextSound;
-				SoundPage = DigiList[(SoundPlaying * 2) + 0];
-				SoundData = PM_GetSoundPage(SoundPage);
-				SoundLen = DigiList[(SoundPlaying * 2) + 1];
-				SoundPlayLen = (SoundLen < 4096) ? SoundLen : 4096;
-				SoundPlayPos = 0;
-				NextSound = -1;
 			}
-			for (i = 0; i < (sizeof(sndbuf)/sizeof(sndbuf[0])); i += 2) {
-				if (SoundPlaying != -1) {
-					if (SoundPositioned) {
-						samp = (SoundData[(SoundPlayPos >> 16)] << 8)^0x8000;
-						snd = samp*(16-L)/32+musbuf[i/2];
-						/*snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))*(16-L)>>5)+musbuf[i/2];*/
-						if (snd > 32767)
-							snd = 32767;
-						if (snd < -32768)
-							snd = -32768;
-						sndbuf[i+0] = snd;
-						samp = (SoundData[(SoundPlayPos >> 16)] << 8)^0x8000;
-						snd = samp*(16-R)/32+musbuf[i/2];
-						/*snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))*(16-R)>>5)+musbuf[i/2];*/
-						if (snd > 32767)
-							snd = 32767;
-						if (snd < -32768)
-							snd = -32768;
-						sndbuf[i+1] = snd;
-					} else {
-						snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))>>2)+musbuf[i/2];
-						if (snd > 32767)
-							snd = 32767;
-						if (snd < -32768)
-							snd = -32768;
-						sndbuf[i+0] = snd;
-						snd = (((signed short)((SoundData[(SoundPlayPos >> 16)] << 8)^0x8000))>>2)+musbuf[i/2];
-						if (snd > 32767)
-							snd = 32767;
-						if (snd < -32768)
-							snd = -32768;
-						sndbuf[i+1] = snd;
-					}
-					SoundPlayPos += 10402; /* 7000 / 44100 * 65536 */
-					if ((SoundPlayPos >> 16) >= SoundPlayLen) {
-						/*SoundPlayPos = 0;*/
-						SoundPlayPos -= (SoundPlayLen << 16);
-						SoundLen -= 4096;
-						SoundPlayLen = (SoundLen < 4096) ? SoundLen : 4096;
-						if (SoundLen <= 0) {
-							SoundPlaying = -1;
-							SoundPositioned = false;
-						} else {
-							SoundPage++;
-							SoundData = PM_GetSoundPage(SoundPage);
-						}
-					}
-				} else {
-					sndbuf[i+0] = musbuf[i/2];
-					sndbuf[i+1] = musbuf[i/2];
-				}
-			}
+
+			for (i = 0; i < (sizeof(sndbuf)/sizeof(sndbuf[0])); i += 2)
+				sndbuf[i+0] = sndbuf[i+1] = musbuf[i>>1U];
+
+			SoundFxCh_OneBlock(&SoundFxCh,sndbuf,sizeof(sndbuf)/(sizeof(sndbuf[0])*2));
+			if (multiple_fx) for (i=0;i < MAX_ALT_FX;i++) SoundFxCh_OneBlock(&SoundFxAlt[i],sndbuf,sizeof(sndbuf)/(sizeof(sndbuf[0])*2));
+			pthread_mutex_unlock(&hSoundThreadMutex);
 			write(audiofd, sndbuf, sizeof(sndbuf));
-		}		
+		}
+		else {
+			pthread_mutex_unlock(&hSoundThreadMutex);
+		}
 	}
 	return NULL;
 }
@@ -309,6 +383,12 @@ void SD_Startup()
 	
 	if (SD_Started)
 		return;
+
+	memset(&SoundFxCh,0,sizeof(SoundFxCh));
+	SoundFxCh.active = -1;
+
+	memset(&SoundFxAlt,0,sizeof(SoundFxAlt));
+	for (want=0;want < MAX_ALT_FX;want++) SoundFxAlt[want].active = -1;
 
 	Blah();
 	
@@ -376,8 +456,6 @@ void SD_Startup()
 	printf("Frag Size: %d\n", info.fragsize);
 	printf("Bytes    : %d\n", info.bytes);
 
-	NextSound = -1;
-	SoundPlaying = -1;
 	CurDigi = -1;
 	CurAdlib = -1;
 	NewAdlib = -1;
@@ -392,6 +470,19 @@ void SD_Startup()
 		SD_Shutdown();
 		return;
 	}
+}
+
+/* Jonathan C: The idea is the main loop (or event loop where it matters) will call this
+ *             periodically and this function will take care of ensuring continuous playback
+ *             across pages. I think it was unwise for the SDLWolf3d developer to rely on
+ *             calling PM_GetPages() from the sound thread. */
+void SD_Idle() {
+	unsigned int i;
+
+	pthread_mutex_lock(&hSoundThreadMutex);
+	SoundFxCh_Idle(&SoundFxCh);
+	if (multiple_fx) for (i=0;i < MAX_ALT_FX;i++) SoundFxCh_Idle(&SoundFxAlt[i]);
+	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 void SD_Shutdown()
@@ -428,18 +519,38 @@ boolean SD_PlaySound(soundnames sound)
 	
 	s = (SoundCommon *)audiosegs[STARTADLIBSOUNDS + sound];
 
+	pthread_mutex_lock(&hSoundThreadMutex);
 	if (DigiMap[sound] != -1) {
-		if ((SoundPlaying == -1) || (CurDigi == -1) || 
-		(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurDigi])->priority) ) {
-			if (SPHack) {
-				SPHack = false;
-			} else {
-				SoundPositioned = false;
-			}
-			CurDigi = sound;
-			NextSound = DigiMap[sound];
+		if (SoundFxCh.active < 0 || (!multiple_fx && s->priority >= SoundFxCh.priority)) {
+			SoundFxCh_ReInit(&SoundFxCh);
+			SoundFxCh_BeginStreamingPages(&SoundFxCh,sound);
+			pthread_mutex_unlock(&hSoundThreadMutex);
 			return true;
 		}
+
+		if (multiple_fx) {
+			unsigned int i;
+
+			for (i=0;i < MAX_ALT_FX;i++) {
+				if (SoundFxAlt[i].active < 0) {
+					SoundFxCh_ReInit(&SoundFxAlt[i]);
+					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
+					pthread_mutex_unlock(&hSoundThreadMutex);
+					return true;
+				}
+			}
+
+			for (i=0;i < MAX_ALT_FX;i++) {
+				if (SoundFxAlt[i].active < 0 || s->priority >= SoundFxAlt[i].priority) {
+					SoundFxCh_ReInit(&SoundFxAlt[i]);
+					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
+					pthread_mutex_unlock(&hSoundThreadMutex);
+					return true;
+				}
+			}
+		}
+
+		pthread_mutex_unlock(&hSoundThreadMutex);
 		return false;
 	}
 	
@@ -447,8 +558,10 @@ boolean SD_PlaySound(soundnames sound)
 	(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
 		CurAdlib = sound;
 		NewAdlib = sound;
+		pthread_mutex_unlock(&hSoundThreadMutex);
 		return true;
 	}
+	pthread_mutex_unlock(&hSoundThreadMutex);
 	return false;
 }
 
@@ -460,10 +573,27 @@ boolean SD_PlaySound(soundnames sound)
 //////////////////////////////////////////////////////////////////////// */
 word SD_SoundPlaying()
 {
-	if (SoundPlaying != -1)
-		return CurDigi;
-	if (AdlibPlaying != -1)
+	pthread_mutex_lock(&hSoundThreadMutex);
+	if (SoundFxCh.soundname != -1 && SoundFxCh.active >= 0) {
+		pthread_mutex_unlock(&hSoundThreadMutex);
+		return SoundFxCh.soundname;
+	}
+
+	if (multiple_fx) {
+		unsigned int i;
+		for (i=0;i < MAX_ALT_FX;i++) {
+			if (SoundFxAlt[i].active >= 0 && SoundFxAlt[i].soundname != -1) {
+				pthread_mutex_unlock(&hSoundThreadMutex);
+				return SoundFxCh.soundname;
+			}
+		}
+	}
+
+	if (AdlibPlaying != -1) {
+		pthread_mutex_unlock(&hSoundThreadMutex);
 		return CurAdlib;
+	}
+	pthread_mutex_unlock(&hSoundThreadMutex);
 	return 0;
 }
 
@@ -474,7 +604,9 @@ word SD_SoundPlaying()
 //////////////////////////////////////////////////////////////////////// */
 void SD_StopSound()
 {
-	SoundPlaying = -1;
+	pthread_mutex_lock(&hSoundThreadMutex);
+	SoundFxCh.active = -1;
+	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -484,7 +616,7 @@ void SD_StopSound()
 //////////////////////////////////////////////////////////////////////// */
 void SD_WaitSoundDone()
 {
-	while (SD_SoundPlaying()) ;
+	while (SD_SoundPlaying()) SD_Idle();
 }
 
 /*
@@ -536,10 +668,13 @@ static const byte lefttable[ATABLEMAX][ATABLEMAX * 2] = {
 { 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8}
 };
 
-static void SetSoundLoc(fixed gx, fixed gy)
-{
+void SoundFxCh_SetPosition(SoundPlaybackChannel *c,fixed gx,fixed gy) {
 	fixed xt, yt;
 	int x, y;
+
+	c->positional = 1;
+	c->posx = gx;
+	c->posy = gy;
 
 /* translate point to view centered coordinates */
 	gx -= viewx;
@@ -568,8 +703,21 @@ static void SetSoundLoc(fixed gx, fixed gy)
 	if (x >= ATABLEMAX)
 		x = ATABLEMAX - 1;
 
-	leftchannel  =  lefttable[x][y + ATABLEMAX];
-	rightchannel = righttable[x][y + ATABLEMAX];
+	c->L =  lefttable[x][y + ATABLEMAX];
+	c->R = righttable[x][y + ATABLEMAX];
+
+/* Jonathan C: Also scale down by distance! */
+	if (EnableVolumeByDistance) {
+		fixed md = (abs(gx) > abs(gy) ? abs(gx) : abs(gy));
+		if (md < (2<<TILESHIFT)) md = 2<<TILESHIFT;
+		md = (16<<TILESHIFT) / ((fixed)(sqrt((double)md / (2<<TILESHIFT)) * (1<<TILESHIFT))); /* <- FIXME: Use lookup table */
+		c->L = 16 - (((16 - c->L) * md) / 16);
+		c->R = 16 - (((16 - c->R) * md) / 16);
+	}
+}
+
+void SoundFxCh_UpdatePosition(SoundPlaybackChannel *c) {
+	SoundFxCh_SetPosition(c,c->posx,c->posy);
 }
 
 /*
@@ -583,28 +731,75 @@ static void SetSoundLoc(fixed gx, fixed gy)
 ==========================
 */
 
-void PlaySoundLocGlobal(word s, intptr_t id, fixed gx, fixed gy)
+void PlaySoundLocGlobal(word sound, intptr_t id, fixed gx, fixed gy)
 {
-	SetSoundLoc(gx, gy);
+	SoundCommon *s;
 	
-	SPHack = true;
-	if (SD_PlaySound(s)) {
-		SoundPositioned = true;
-		L = leftchannel;
-		R = rightchannel;
-		globalsoundx = gx;
-		globalsoundy = gy;
+	s = (SoundCommon *)audiosegs[STARTADLIBSOUNDS + sound];
+
+	pthread_mutex_lock(&hSoundThreadMutex);
+	if (DigiMap[sound] != -1) {
+		if (SoundFxCh.active < 0 || (!multiple_fx && s->priority >= SoundFxCh.priority)) {
+			SoundFxCh_ReInit(&SoundFxCh);
+			SoundFxCh_SetPosition(&SoundFxCh,gx,gy);
+			SoundFxCh_BeginStreamingPages(&SoundFxCh,sound);
+			pthread_mutex_unlock(&hSoundThreadMutex);
+			return;
+		}
+
+		if (multiple_fx) {
+			unsigned int i;
+
+			for (i=0;i < MAX_ALT_FX;i++) {
+				if (SoundFxAlt[i].active < 0) {
+					SoundFxCh_ReInit(&SoundFxAlt[i]);
+					SoundFxCh_SetPosition(&SoundFxAlt[i],gx,gy);
+					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
+					pthread_mutex_unlock(&hSoundThreadMutex);
+					return;
+				}
+			}
+
+			for (i=0;i < MAX_ALT_FX;i++) {
+				if (SoundFxAlt[i].active < 0 || s->priority >= SoundFxAlt[i].priority) {
+					SoundFxCh_ReInit(&SoundFxAlt[i]);
+					SoundFxCh_SetPosition(&SoundFxAlt[i],gx,gy);
+					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
+					pthread_mutex_unlock(&hSoundThreadMutex);
+					return;
+				}
+			}
+		}
+
+		pthread_mutex_unlock(&hSoundThreadMutex);
+		return;
 	}
+	
+	if ((AdlibPlaying == -1) || (CurAdlib == -1) || 
+	(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
+		CurAdlib = sound;
+		NewAdlib = sound;
+		pthread_mutex_unlock(&hSoundThreadMutex);
+		return;
+	}
+	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 void UpdateSoundLoc(fixed x, fixed y, int angle)
 {
-	if (SoundPositioned)
-	{
-		SetSoundLoc(globalsoundx, globalsoundy);
-		L = leftchannel;
-		R = rightchannel;
+	pthread_mutex_lock(&hSoundThreadMutex);
+	if (SoundFxCh.active >= 0 && SoundFxCh.positional)
+		SoundFxCh_UpdatePosition(&SoundFxCh);
+
+	if (multiple_fx) {
+		unsigned int i;
+		for (i=0;i < MAX_ALT_FX;i++) {
+			if (SoundFxAlt[i].active >= 0 && SoundFxAlt[i].positional)
+				SoundFxCh_UpdatePosition(&SoundFxAlt[i]);
+		}
 	}
+
+	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -614,7 +809,12 @@ void UpdateSoundLoc(fixed x, fixed y, int angle)
 //////////////////////////////////////////////////////////////////////// */
 void SD_MusicOn()
 {
+	/* NTS: This is only called from SD_StartMusic or the "music pause" function in wl_menu.c
+	 *      which obviously means the iD developers meant it to start/stop but not restart
+	 *      the song */
+	pthread_mutex_lock(&hSoundThreadMutex);
 	sqActive = true;
+	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -624,7 +824,9 @@ void SD_MusicOn()
 //////////////////////////////////////////////////////////////////////// */
 void SD_MusicOff()
 {
+	pthread_mutex_lock(&hSoundThreadMutex);
 	sqActive = false;
+	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -635,13 +837,30 @@ void SD_MusicOff()
 void SD_StartMusic(int music)
 {
 	music += STARTMUSIC;
-	
+
 	CA_CacheAudioChunk(music);
-	
+
 	SD_MusicOff();
 	SD_MusicOn();
+
+	pthread_mutex_lock(&hSoundThreadMutex);
 	Music = (MusicGroup *)audiosegs[music];
 	NewMusic = 1;
+	pthread_mutex_unlock(&hSoundThreadMutex);
+}
+
+void SD_SetMultipleFxMode(unsigned char on) {
+	pthread_mutex_lock(&hSoundThreadMutex);
+
+	if (on != multiple_fx) {
+		unsigned int i;
+
+		memset(&SoundFxAlt,0,sizeof(SoundFxAlt));
+		for (i=0;i < MAX_ALT_FX;i++) SoundFxAlt[i].active = -1;
+		multiple_fx = on;
+	}
+
+	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 void SD_SetDigiDevice(SDSMode mode)

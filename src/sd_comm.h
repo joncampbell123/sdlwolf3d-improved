@@ -1,6 +1,8 @@
 #ifndef	__SD_COMM_H__
 #define	__SD_COMM_H__
 
+#define CHUNKS_PER_CHANNEL	4
+
 typedef	enum	{
 					sdm_Off,
 					sdm_PC,sdm_AdLib
@@ -20,6 +22,7 @@ extern	SMMode		MusicMode;
 
 extern void SD_Startup();
 extern void SD_Shutdown();
+extern void SD_Idle();
 
 extern boolean SD_PlaySound(soundnames sound);
 extern void SD_StopSound(),
