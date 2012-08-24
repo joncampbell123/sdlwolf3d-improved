@@ -1,0 +1,23 @@
+sdlwolf3d:
+  Nothing
+
+sdlwolf3dr:
+  - Find a registered copy of Wolfenstein 3D that ISN'T the 1992 version (that works with this compile)
+
+sdlwolf3dr92:
+  Nothing
+
+sdlspear:
+  Nothing
+
+sdlspeard:
+  Nothing
+
+sdlwolf3deaj:
+  - Graphical glitches: Scoreboard at bottom of screen is not showing any text or numbers
+  - "ILM" cheat replaces scoreboard with garbage
+
+sdlwolf3deaj2:
+  - Graphical glitches: Scoreboard at bottom of screen gets corrupted easily, not showing text or numbers
+  - Some sound effects are wrong (compared to playing the hacked EXE in DOSBox)
+

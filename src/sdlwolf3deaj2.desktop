@@ -1,0 +1,6 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Wolfenstein 3D Eat At Joe's II conversion (SDL port)
+Type=Application
+Exec=sdlwolf3deaj2
+Categories=Application;Game;

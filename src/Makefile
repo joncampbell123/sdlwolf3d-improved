@@ -22,6 +22,14 @@ ifndef $(WMODE)
  ifeq ($(SUBDIR),spear)
    WMODE = 3
  endif
+ ifeq ($(SUBDIR),wolf3deaj)
+   WMODE = 1
+   MORE_CFLAGS += -DEATATJOES=1
+ endif
+ ifeq ($(SUBDIR),wolf3deaj2)
+   WMODE = 1
+   MORE_CFLAGS += -DEATATJOES=2
+ endif
 endif
 
 MORE_CFLAGS += -DWMODE=$(WMODE)
@@ -65,6 +73,12 @@ sdatafiles: audiohed.sod audiot.sod config.sod gamemaps.sod maphead.sod vgadict.
 
 # Spear of Destiny shareware
 sddatafiles: audiohed.sdm audiot.sdm config.sdm gamemaps.sdm maphead.sdm vgadict.sdm vgagraph.sdm vgahead.sdm vswap.sdm
+
+# "Eat at Joes" total conversion
+eajdatafiles: audiohed.eaj audiot.eaj gamemaps.eaj maphead.eaj vgadict.eaj vgagraph.eaj vgahead.eaj vswap.eaj
+
+# "Eat at Joes II" total conversion
+eaj2datafiles: audiohed.ea2 audiot.ea2 gamemaps.ea2 maphead.ea2 vgadict.ea2 vgagraph.ea2 vgahead.ea2 vswap.ea2
 
 audiohed.sdm: ../datasd/audiohed.sdm.gz
 	gunzip -c -d $^ >$@
@@ -174,6 +188,54 @@ vgahead.wl1: ../data/vgahead.wl1
 vswap.wl1: ../data/vswap.wl1.xz
 	xz -c -d $^ >$@
 
+audiohed.eaj: ../dataeaj/audiohed.eaj.gz
+	gunzip -c -d $^ >$@
+
+audiot.eaj: ../dataeaj/audiot.eaj.gz
+	gunzip -c -d $^ >$@
+
+gamemaps.eaj: ../dataeaj/gamemaps.eaj.gz
+	gunzip -c -d $^ >$@
+
+maphead.eaj: ../dataeaj/maphead.eaj.gz
+	gunzip -c -d $^ >$@
+
+vgadict.eaj: ../dataeaj/vgadict.eaj.gz
+	gunzip -c -d $^ >$@
+
+vgagraph.eaj: ../dataeaj/vgagraph.eaj.gz
+	gunzip -c -d $^ >$@
+
+vgahead.eaj: ../dataeaj/vgahead.eaj.gz
+	gunzip -c -d $^ >$@
+
+vswap.eaj: ../dataeaj/vswap.eaj.gz
+	gunzip -c -d $^ >$@
+
+audiohed.ea2: ../dataeaj2/audiohed.ea2.gz
+	gunzip -c -d $^ >$@
+
+audiot.ea2: ../dataeaj2/audiot.ea2.gz
+	gunzip -c -d $^ >$@
+
+gamemaps.ea2: ../dataeaj2/gamemaps.ea2.gz
+	gunzip -c -d $^ >$@
+
+maphead.ea2: ../dataeaj2/maphead.ea2.gz
+	gunzip -c -d $^ >$@
+
+vgadict.ea2: ../dataeaj2/vgadict.ea2.gz
+	gunzip -c -d $^ >$@
+
+vgagraph.ea2: ../dataeaj2/vgagraph.ea2.gz
+	gunzip -c -d $^ >$@
+
+vgahead.ea2: ../dataeaj2/vgahead.ea2.gz
+	gunzip -c -d $^ >$@
+
+vswap.ea2: ../dataeaj2/vswap.ea2.gz
+	gunzip -c -d $^ >$@
+
 $(SUBDIR)/objs.o: objs.c
 	$(CC) -c $(CFLAGS) -o $@ $<
 
@@ -249,10 +311,10 @@ sdl$(SUBDIR): $(DOBJS)
 	$(CC) -o sdl$(SUBDIR) $(DOBJS) $(DLDLIBS)
 
 clean:
-	rm -rf sdlspear sdlspeard sdlwolf3d sdlwolf3dr sdlwolf3dr92 *.o *.il wolf3d wolf3dr wolf3dr92 spear speard
+	rm -rf sdlspear sdlspeard sdlwolf3d sdlwolf3dr sdlwolf3dr92 *.o *.il wolf3d wolf3dr wolf3dr92 spear speard sdlwolf3deaj sdlwolf3deaj2 wolf3deaj wolf3deaj2
 
 distclean: clean
-	rm -rf *~ DEADJOE *.wl1 *.wl6 *.sod *.sdm
+	rm -rf *~ DEADJOE *.wl1 *.wl6 *.sod *.sdm *.eaj *.ea2
 
 forced: distclean all
 	rm -rf *.o
@@ -262,11 +324,15 @@ everything:
 	make rdatafiles
 	make sdatafiles
 	make sddatafiles
+	make eajdatafiles
+	make eaj2datafiles
 	make SUBDIR=wolf3d
 	make SUBDIR=wolf3dr
 	make SUBDIR=wolf3dr92
 	make SUBDIR=spear
 	make SUBDIR=speard
+	make SUBDIR=wolf3deaj
+	make SUBDIR=wolf3deaj2
 
 install: everything
 	mkdir -p $(DESTDIR)/usr/share/sdlwolf3d/wolf3d/
@@ -277,14 +343,22 @@ install: everything
 	cp -v sdlspear *.sod $(DESTDIR)/usr/share/sdlwolf3d/spear/
 	mkdir -p $(DESTDIR)/usr/share/sdlwolf3d/speard/
 	cp -v sdlspeard *.sdm $(DESTDIR)/usr/share/sdlwolf3d/speard/
+	mkdir -p $(DESTDIR)/usr/share/sdlwolf3d/eatatjoes/
+	cp -v sdlwolf3deaj *.eaj $(DESTDIR)/usr/share/sdlwolf3d/eatatjoes/
+	mkdir -p $(DESTDIR)/usr/share/sdlwolf3d/eatatjoes2/
+	cp -v sdlwolf3deaj2 *.ea2 $(DESTDIR)/usr/share/sdlwolf3d/eatatjoes2/
 	mkdir -p $(DESTDIR)/usr/bin/
 	cp -v script-sdlwolf3d.sh $(DESTDIR)/usr/bin/sdlwolf3d
 	cp -v script-sdlwolf3dr92.sh $(DESTDIR)/usr/bin/sdlwolf3dr92
 	cp -v script-sdlspear.sh $(DESTDIR)/usr/bin/sdlspear
 	cp -v script-sdlspeard.sh $(DESTDIR)/usr/bin/sdlspeard
+	cp -v script-sdlwolf3deaj.sh $(DESTDIR)/usr/bin/sdlwolf3deaj
+	cp -v script-sdlwolf3deaj2.sh $(DESTDIR)/usr/bin/sdlwolf3deaj2
 	mkdir -p $(DESTDIR)/usr/share/applications/
 	cp -v sdlwolf3d.desktop $(DESTDIR)/usr/share/applications/
 	cp -v sdlwolf3dr92.desktop $(DESTDIR)/usr/share/applications/
+	cp -v sdlwolf3deaj.desktop $(DESTDIR)/usr/share/applications/
+	cp -v sdlwolf3deaj2.desktop $(DESTDIR)/usr/share/applications/
 	cp -v sdlspear.desktop $(DESTDIR)/usr/share/applications/
 	cp -v sdlspeard.desktop $(DESTDIR)/usr/share/applications/
 

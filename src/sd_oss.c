@@ -64,6 +64,9 @@ unsigned char multiple_fx = 1;
 /* --Option: Enable diminishing positional sound effects by distance.
  *           If disabled, only the 2D "panning" effects apply. */
 unsigned char EnableVolumeByDistance = 1;
+/* TODO: Option to apply DC restoration to the audio samples, default off except for the "Eat at Joes" build.
+ *       The DC restoration would avoid clipping, popping, and saturation artifacts caused by the
+ *       mediocre quality of the digitized samples */
 
 static volatile boolean SD_Started = 0;
 static volatile int audiofd = -1;

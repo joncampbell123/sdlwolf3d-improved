@@ -34,12 +34,19 @@
 #define GAMETYPE	"WL1\0"
 
 #elif WMODE == 1
+
+# if defined(EATATJOES) && EATATJOES == 1
+#  define GAMENAME	"Wolfenstein 3D Eat At Joes total conversion"
+#  define GAMEEXT	"eaj"
+#  define GAMETYPE	"EAJ\0"
+# else
 /* #define SPEAR */
 /* #define SPEARDEMO */
 /* #define UPLOAD */
-#define GAMENAME	"Wolfenstein 3D"
-#define GAMEEXT		"wl6"
-#define GAMETYPE	"WL6\0"
+#  define GAMENAME	"Wolfenstein 3D"
+#  define GAMEEXT	"wl6"
+#  define GAMETYPE	"WL6\0"
+#endif
 
 #elif WMODE == 2
 #define SPEAR 

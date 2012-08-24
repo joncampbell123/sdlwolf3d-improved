@@ -2443,65 +2443,27 @@ void SetupControlPanel()
 	/*
 	// SEE WHICH SAVE GAME FILES ARE AVAILABLE & READ STRING IN
 	*/
-{
-#if defined(HAVE_FFBLK)
-	struct ffblk f;
-	
-	if (!findfirst(SaveNaame,&f,0))
-		do
-		{
-			which=f.ff_name[7]-'0';
-			if (which<10)
-			{
+	{
+		glob_t globbuf;
+		int x;
+
+		if (glob(SaveName, 0, NULL, &globbuf))
+			return;
+
+		for (x = 0; x < globbuf.gl_pathc; x++) {
+			which = globbuf.gl_pathv[x][7] - '0';
+			if (which < 10)	{
 				char temp[32];
 
-				if (ReadSaveTag(f.ff_name, temp) != -1) {
+				if (ReadSaveTag(globbuf.gl_pathv[x], temp) != -1) {
 					SaveGamesAvail[which]=1;
 					strcpy(&SaveGameNames[which][0],temp);
 				}
-			}
-		} while(!findnext(&f));
-#elif defined(HAVE_FINDDATA)
-	struct _finddata_t f;
-	long hand;
-
-	if ((hand = _findfirst(SaveName, &f)) != -1)
-		do
-		{
-			which=f.name[7]-'0';
-			if (which<10)
-			{
-				char temp[32];
-				
-				if (ReadSaveTag(f.name, temp) != -1) {
-					SaveGamesAvail[which]=1;
-					strcpy(&SaveGameNames[which][0],temp);
-				}
-			}
-		} while(_findnext(hand, &f) != -1);
-#else
-	glob_t globbuf;
-	int x;
-	
-	if (glob(SaveName, 0, NULL, &globbuf))
-		return;
-	
-	for (x = 0; x < globbuf.gl_pathc; x++) {
-		which = globbuf.gl_pathv[x][7] - '0';
-		if (which < 10)	{
-			char temp[32];
-			
-			if (ReadSaveTag(globbuf.gl_pathv[x], temp) != -1) {
-				SaveGamesAvail[which]=1;
-				strcpy(&SaveGameNames[which][0],temp);
 			}
 		}
+
+		globfree(&globbuf);
 	}
-
-	globfree(&globbuf);
-#endif
-}
-
 }
 
 
@@ -3081,117 +3043,41 @@ void ShootSnd()
 //////////////////////////////////////////////////////////////////////// */
 void CheckForEpisodes()
 {
-#if defined(HAVE_FFBLK)
-	struct ffblk f;
-/*
-// ENGLISH
-*/
-#ifndef UPLOAD
-#ifndef SPEAR
-	if (!findfirst("*.wl6", &f, FA_ARCH)) {
-		strcpy(extension, "wl6");
-		NewEmenu[2].active =
-		NewEmenu[4].active =
-		NewEmenu[6].active =
-		NewEmenu[8].active =
-		NewEmenu[10].active =
-		EpisodeSelect[1] =
-		EpisodeSelect[2] =
-		EpisodeSelect[3] =
-		EpisodeSelect[4] =
-		EpisodeSelect[5] = 1;
-	}
-	else if (!findfirst("*.wl3", &f, FA_ARCH)) {
-		strcpy(extension, "wl3");
-		NewEmenu[2].active =
-		NewEmenu[4].active =
-		EpisodeSelect[1] =
-		EpisodeSelect[2] = 1;
-	}
-	else
-#endif /* SPEAR */
-#endif /* UPLOAD */
-
-#ifdef SPEAR
-#ifndef SPEARDEMO
-	if (!findfirst("*.sod", &f, FA_ARCH)) {
-		strcpy(extension, "sod");
-	} else
-		Quit("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
-#else /* SPEARDEMO */
-	if (!findfirst("*.sdm",&f,FA_ARCH)) {
-		strcpy(extension, "sdm");
-	} else
-		Quit("NO SPEAR OF DESTINY DEMO DATA FILES TO BE FOUND!");
-#endif /* SPEARDEMO */
-
-#else /* SPEAR */
-	if (!findfirst("*.wl1",&f,FA_ARCH)) {
-		strcpy(extension, "wl1");
-	} else
-		Quit("NO WOLFENSTEIN 3-D DATA FILES TO BE FOUND!");
-#endif /* SPEAR */
-
-#elif defined(HAVE_FINDDATA)
-
-	struct _finddata_t f;
-
-/*
-// ENGLISH
-*/
-#ifndef UPLOAD
-#ifndef SPEAR
-	if (_findfirst("*.wl6", &f) != -1)
-	{
-		strcpy(extension, "wl6");
-		NewEmenu[2].active =
-		NewEmenu[4].active =
-		NewEmenu[6].active =
-		NewEmenu[8].active =
-		NewEmenu[10].active =
-		EpisodeSelect[1] =
-		EpisodeSelect[2] =
-		EpisodeSelect[3] =
-		EpisodeSelect[4] =
-		EpisodeSelect[5] = 1;
-	} else if (_findfirst("*.wl3",&f) != -1) {
-		strcpy(extension, "wl3");
-		NewEmenu[2].active =
-		NewEmenu[4].active =
-		EpisodeSelect[1] =
-		EpisodeSelect[2] = 1;
-	}
-	else
-#endif /* SPEAR */
-#endif /* UPLOAD */
-
-#ifdef SPEAR
-#ifndef SPEARDEMO
-	if (_findfirst("*.sod", &f) != -1) {
-		strcpy(extension, "sod");
-	} else
-		Quit("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
-#else /* SPEARDEMO */
-	if (_findfirst("*.sdm", &f) != -1) {
-		strcpy(extension, "sdm");
-	} else
-		Quit("NO SPEAR OF DESTINY DEMO DATA FILES TO BE FOUND!");
-#endif /* SPEARDEMO */
-
-#else /* SPEAR */
-	if (_findfirst("*.wl1",&f) != -1) {
-		strcpy(extension, "wl1");
-	} else
-		Quit("NO WOLFENSTEIN 3-D DATA FILES TO BE FOUND!");
-#endif /* SPEAR */
-
-#else
 	glob_t globbuf;
-/*
-// ENGLISH
-*/
-#ifndef UPLOAD
-#ifndef SPEAR
+
+#if defined(EATATJOES) && EATATJOES == 1
+	if (glob("*.eaj", 0, NULL, &globbuf) == 0) {
+		strcpy(extension, "eaj");
+		NewEmenu[2].active =
+		NewEmenu[4].active =
+		NewEmenu[6].active =
+		NewEmenu[8].active =
+		NewEmenu[10].active =
+		EpisodeSelect[1] =
+		EpisodeSelect[2] =
+		EpisodeSelect[3] =
+		EpisodeSelect[4] =
+		EpisodeSelect[5] = 1;
+	} else
+		Quit("NO WOLFENSTEIN 3D EAT AT JOES DATA FILES TO BE FOUND!");
+#elif defined(EATATJOES) && EATATJOES == 2
+	if (glob("*.ea2", 0, NULL, &globbuf) == 0) {
+		strcpy(extension, "ea2");
+		NewEmenu[2].active =
+		NewEmenu[4].active =
+		NewEmenu[6].active =
+		NewEmenu[8].active =
+		NewEmenu[10].active =
+		EpisodeSelect[1] =
+		EpisodeSelect[2] =
+		EpisodeSelect[3] =
+		EpisodeSelect[4] =
+		EpisodeSelect[5] = 1;
+	} else
+		Quit("NO WOLFENSTEIN 3D EAT AT JOES II DATA FILES TO BE FOUND!");
+#else
+# ifndef UPLOAD
+# ifndef SPEAR
 	if (glob("*.wl6", 0, NULL, &globbuf) == 0) {
 		strcpy(extension, "wl6");
 		NewEmenu[2].active =
@@ -3211,31 +3097,31 @@ void CheckForEpisodes()
 		EpisodeSelect[1] =
 		EpisodeSelect[2] = 1;
 	} else
-#endif /* SPEAR */
-#endif /* UPLOAD */
+# endif /* SPEAR */
+# endif /* UPLOAD */
 
-#ifdef SPEAR
-#ifndef SPEARDEMO
+# ifdef SPEAR
+# ifndef SPEARDEMO
 	if (glob("*.sod", 0, NULL, &globbuf) == 0) {
 		strcpy(extension, "sod");
 	} else
 		Quit("NO SPEAR OF DESTINY DATA FILES TO BE FOUND!");
-#else /* SPEARDEMO */
+# else /* SPEARDEMO */
 	if (glob("*.sdm", 0, NULL, &globbuf) == 0) {
 		strcpy(extension, "sdm");
 	} else
 		Quit("NO SPEAR OF DESTINY DEMO DATA FILES TO BE FOUND!");
-#endif /* SPEARDEMO */
+# endif /* SPEARDEMO */
 
-#else /* SPEAR */
+# else /* SPEAR */
 	if (glob("*.wl1", 0, NULL, &globbuf) == 0) {
 		strcpy(extension, "wl1");
 	} else
 		Quit("NO WOLFENSTEIN 3-D DATA FILES TO BE FOUND!");
-#endif /* SPEAR */
+# endif /* SPEAR */
+#endif
 
 	globfree(&globbuf);
-#endif
 
 	strcat(configname, extension);
 	strcat(SaveName, extension);
