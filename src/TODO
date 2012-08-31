@@ -5,7 +5,8 @@ sdlwolf3dr:
   - Find a registered copy of Wolfenstein 3D that ISN'T the 1992 version (that works with this compile)
 
 sdlwolf3dr92:
-  Nothing
+  - BUG, 32-bit builds: Using the secret exit in Level 1 does not go to bonus level 9 as it does in
+    normal releases of the game. 64-bit builds work normally.
 
 sdlspear:
   Nothing
