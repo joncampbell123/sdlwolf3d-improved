@@ -534,7 +534,7 @@ void CA_CacheAudioChunk(int chunk)
 	int pos, length;
 
 	if (chunk < 0 || chunk >= (int)audiostarts_max) {
-		fprintf(stderr,"CA_CacheAudioChunk() chunk out of range (0 < %d < %d)\n",chunk,audiostarts_max);
+		fprintf(stderr,"CA_CacheAudioChunk() chunk out of range (0 < %d < %d)\n",chunk,(int)audiostarts_max);
 		return;
 	}
 
