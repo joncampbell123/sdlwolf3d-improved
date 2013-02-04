@@ -54,6 +54,8 @@ if (!( -f "$filename.xz" )) {
 	print "Packing binary (all build files except LIB,OBJ,etc.)\n";
 	print "  to: $filename\n";
 
+	$x = system("strip --strip-all -R .comment src/{sdlspear,sdlspeard,sdlwolf3d,sdlwolf3deaj,sdlwolf3deaj2,sdlwolf3dr,sdlwolf3dr92}");
+	$x = system("upx --best src/{sdlspear,sdlspeard,sdlwolf3d,sdlwolf3deaj,sdlwolf3deaj2,sdlwolf3dr,sdlwolf3dr92}");
 	$x = system("tar -cvf $filename src/*.{ea2,eaj,sdm,sod,wl1,wl6} src/*.desktop src/{sdlspear,sdlspeard,sdlwolf3d,sdlwolf3deaj,sdlwolf3deaj2,sdlwolf3dr,sdlwolf3dr92}");
 	die unless $x == 0;
 	print "Packing to XZ\n";
