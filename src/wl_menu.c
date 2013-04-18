@@ -40,7 +40,7 @@ CP_iteminfo
 #else
 	MainItems={MENU_X,MENU_Y, 9,STARTITEM,24},
 #endif
-	SndItems={SM_X,SM_Y1,11,0,52},
+	SndItems={SM_X,SM_Y1,12,0,52},
 	LSItems={LSM_X,LSM_Y,10,0,24},
 	CtlItems={CTL_X,CTL_Y,6,-1,56},
 	CusItems={8,CST_Y+13*2,9,-1,0},
@@ -73,8 +73,9 @@ SndMenu[]=
 	{0,"",0},
 	/* Digititized sound */
 	{1,"None",},
-	{1,"SDL audio (OPL emu)",},
 	{1,"SDL audio",},
+	{0,"",0},
+	{1,"Multiple SFX channels",},
 	{0,"",0},
 	{0,"",0},
 	/* Music */
@@ -909,23 +910,24 @@ void CP_Sound()
 				ShootSnd();
 				DrawSoundMenu();
 				break;
-			case 5:		/* Digi Mode: AdLib */
-				SD_SetDigiDevice(sds_AdLib);
-				ShootSnd();
-				DrawSoundMenu();
-				break;
-			case 6:		/* Digi Mode: SDL audio */
+			case 5:		/* Digi Mode: SDL audio */
 				SD_SetDigiDevice(sds_SDL_Audio);
 				ShootSnd();
 				DrawSoundMenu();
 				break;
 
-			case 9:		/* Music Mode: None */
+			case 7:		/* Digi Mode: Multiple SFX */
+				SD_SetMultipleFxMode(!multiple_fx);
+				ShootSnd();
+				DrawSoundMenu();
+				break;
+
+			case 10:	/* Music Mode: None */
 				SD_SetMusicMode(smm_Off);
 				ShootSnd();
 				DrawSoundMenu();
 				break;
-			case 10:	/* Music Mode: AdLib */
+			case 11:	/* Music Mode: AdLib */
 				SD_SetMusicMode(smm_AdLib);
 				ShootSnd();
 				DrawSoundMenu();
@@ -949,6 +951,8 @@ void CP_Sound()
 void DrawSoundMenu(void)
 {
 	int i,on;
+
+	SndMenu[7].active = (DigiMode == sds_SDL_Audio) ? 1 : 0;
 
 	/*
 	// DRAW SOUND MENU
@@ -984,14 +988,15 @@ void DrawSoundMenu(void)
 				// DIGITIZED SOUND
 				*/
 				case 4: if (DigiMode==sds_Off) on=1; break;
-				case 5: if (DigiMode==sds_AdLib) on=1; break;
-				case 6: if (DigiMode==sds_SDL_Audio) on=1; break;
+				case 5: if (DigiMode==sds_SDL_Audio) on=1; break;
+
+				case 7: if (multiple_fx) on=1; break;
 
 				/*
 				// MUSIC
 				*/
-				case 9: if (MusicMode==smm_Off) on=1; break;
-				case 10:if (MusicMode==smm_AdLib) on=1; break;
+				case 10:if (MusicMode==smm_Off) on=1; break;
+				case 11:if (MusicMode==smm_AdLib) on=1; break;
 			}
 
 			if (on)

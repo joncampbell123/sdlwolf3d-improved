@@ -231,6 +231,7 @@ static void SetDefaults()
 	SD_SetMusicMode(smm_AdLib);
 	SD_SetSoundMode(sdm_AdLib);
 	SD_SetDigiDevice(sds_SDL_Audio);
+	SD_SetMultipleFxMode(1);
 }
 
 int ReadConfig()

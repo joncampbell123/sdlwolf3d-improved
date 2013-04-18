@@ -13,13 +13,13 @@ typedef	enum	{
 				}	SMMode;
 typedef	enum	{
 					sds_Off,
-					sds_AdLib,
 					sds_SDL_Audio
 				}	SDSMode;
 
 extern	SDMode		SoundMode;
 extern	SDSMode		DigiMode;
 extern	SMMode		MusicMode;
+extern  unsigned char multiple_fx;
 
 extern void SD_Startup();
 extern void SD_Shutdown();
@@ -40,6 +40,7 @@ extern void SD_SetDigiDevice(SDSMode);
 
 void PlaySoundLocGlobal(word s, intptr_t id, fixed gx, fixed gy);
 void UpdateSoundLoc(fixed x, fixed y, int angle);
+void SD_SetMultipleFxMode(unsigned char on);
 
 
 extern int DigiMap[];

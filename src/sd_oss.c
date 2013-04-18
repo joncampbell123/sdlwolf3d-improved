@@ -523,10 +523,6 @@ boolean SD_PlaySound(soundnames sound)
 		SDL_UnlockAudio();
 		return false;
 	}
-	else if (DigiMap[sound] != -1 && DigiMode != sds_AdLib) {
-		SDL_UnlockAudio();
-		return false;
-	}
 
 	if ((AdlibPlaying == -1) || (CurAdlib == -1) || 
 		(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
@@ -567,7 +563,7 @@ word SD_SoundPlaying()
 		}
 	}
 
-	if (DigiMode == sds_SDL_Audio || DigiMode == sds_AdLib) {
+	if (DigiMode == sds_SDL_Audio || SoundMode == sdm_AdLib) {
 		if (AdlibPlaying != -1) {
 			SDL_UnlockAudio();
 			return CurAdlib;
@@ -758,10 +754,6 @@ void PlaySoundLocGlobal(word sound, intptr_t id, fixed gx, fixed gy)
 		SDL_UnlockAudio();
 		return;
 	}
-	else if (DigiMap[sound] != -1 && DigiMode != sds_AdLib) {
-		SDL_UnlockAudio();
-		return;
-	}
 
 	if ((AdlibPlaying == -1) || (CurAdlib == -1) || 
 			(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
@@ -842,10 +834,7 @@ void SD_SetMultipleFxMode(unsigned char on) {
 	SDL_LockAudio();
 
 	if (on != multiple_fx) {
-		unsigned int i;
-
-		memset(&SoundFxAlt,0,sizeof(SoundFxAlt));
-		for (i=0;i < MAX_ALT_FX;i++) SoundFxAlt[i].active = -1;
+		SD_StopSound();
 		multiple_fx = on;
 	}
 
