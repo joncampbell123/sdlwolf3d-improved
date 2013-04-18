@@ -827,7 +827,7 @@ void T_Bite (objtype *ob)
 
 void SpawnTrans (int tilex, int tiley)
 {
-	if (SoundBlasterPresent && DigiMode != sds_Off)
+	if (DigiMode != sds_Off)
 		gamestates[s_transdie01].tictime = 105;
 
 	SpawnNewObj(tilex,tiley,s_transstand);
@@ -852,7 +852,7 @@ void SpawnTrans (int tilex, int tiley)
 
 void SpawnUber (int tilex, int tiley)
 {
-	if (SoundBlasterPresent && DigiMode != sds_Off)
+	if (DigiMode != sds_Off)
 		gamestates[s_uberdie01].tictime = 70;
 
 	SpawnNewObj (tilex,tiley,s_uberstand);
@@ -894,7 +894,7 @@ void T_UShoot(objtype *ob)
 
 void SpawnWill(int tilex, int tiley)
 {
-	if (SoundBlasterPresent && DigiMode != sds_Off)
+	if (DigiMode != sds_Off)
 		gamestates[s_willdie2].tictime = 70;
 
 	SpawnNewObj (tilex,tiley,s_willstand);
@@ -1010,7 +1010,7 @@ void T_Will(objtype *ob)
 
 void SpawnDeath(int tilex, int tiley)
 {
-	if (SoundBlasterPresent && DigiMode != sds_Off)
+	if (DigiMode != sds_Off)
 		gamestates[s_deathdie2].tictime = 105;
 
 	SpawnNewObj (tilex,tiley,s_deathstand);
@@ -1110,7 +1110,7 @@ void A_Breathing(objtype *ob)
 
 void SpawnAngel(int tilex, int tiley)
 {
-	if (SoundBlasterPresent && DigiMode != sds_Off)
+	if (DigiMode != sds_Off)
 		gamestates[s_angeldie11].tictime = 105;
 
 	SpawnNewObj (tilex,tiley,s_angelstand);

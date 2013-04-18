@@ -1,7 +1,5 @@
 #include "wl_def.h"
 
-boolean AdLibPresent, SoundBlasterPresent;
-
 SDMode SoundMode;
 SMMode MusicMode;
 SDSMode DigiMode;

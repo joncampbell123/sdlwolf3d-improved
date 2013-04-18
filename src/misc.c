@@ -2,7 +2,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <fcntl.h>
-              
+
+#include "cp437tb.h"
 #include "wl_def.h"
 
 #ifndef O_BINARY
@@ -169,8 +170,64 @@ static void put_dos2ansi(byte attrib)
 		printf ("%c[%d;25;%dm%c[%dm", 27, intens, fore, 27, back);
 }
 
+enum {
+	UTF8ERR_INVALID=-1,
+	UTF8ERR_NO_ROOM=-2
+};
+
+int utf8_encode(char **ptr,char *fence,uint32_t code) {
+	int uchar_size=1;
+	char *p = *ptr;
+
+	if (!p) return UTF8ERR_NO_ROOM;
+	if (code >= (uint32_t)0x80000000UL) return UTF8ERR_INVALID;
+	if (p >= fence) return UTF8ERR_NO_ROOM;
+
+	if (code >= 0x4000000) uchar_size = 6;
+	else if (code >= 0x200000) uchar_size = 5;
+	else if (code >= 0x10000) uchar_size = 4;
+	else if (code >= 0x800) uchar_size = 3;
+	else if (code >= 0x80) uchar_size = 2;
+
+	if ((p+uchar_size) > fence) return UTF8ERR_NO_ROOM;
+
+	switch (uchar_size) {
+		case 1:	*p++ = (char)code;
+			break;
+		case 2:	*p++ = (char)(0xC0 | (code >> 6));
+			*p++ = (char)(0x80 | (code & 0x3F));
+			break;
+		case 3:	*p++ = (char)(0xE0 | (code >> 12));
+			*p++ = (char)(0x80 | ((code >> 6) & 0x3F));
+			*p++ = (char)(0x80 | (code & 0x3F));
+			break;
+		case 4:	*p++ = (char)(0xF0 | (code >> 18));
+			*p++ = (char)(0x80 | ((code >> 12) & 0x3F));
+			*p++ = (char)(0x80 | ((code >> 6) & 0x3F));
+			*p++ = (char)(0x80 | (code & 0x3F));
+			break;
+		case 5:	*p++ = (char)(0xF8 | (code >> 24));
+			*p++ = (char)(0x80 | ((code >> 18) & 0x3F));
+			*p++ = (char)(0x80 | ((code >> 12) & 0x3F));
+			*p++ = (char)(0x80 | ((code >> 6) & 0x3F));
+			*p++ = (char)(0x80 | (code & 0x3F));
+			break;
+		case 6:	*p++ = (char)(0xFC | (code >> 30));
+			*p++ = (char)(0x80 | ((code >> 24) & 0x3F));
+			*p++ = (char)(0x80 | ((code >> 18) & 0x3F));
+			*p++ = (char)(0x80 | ((code >> 12) & 0x3F));
+			*p++ = (char)(0x80 | ((code >> 6) & 0x3F));
+			*p++ = (char)(0x80 | (code & 0x3F));
+			break;
+	};
+
+	*ptr = p;
+	return 0;
+}
+
 void DisplayTextSplash(const byte *text, int l)
 {
+	char unitmp[16],*up;
 	int i, x;
 	
 	/*printf("%02X %02X %02X %02X\n", text[0], text[1], text[2], text[3]); */
@@ -182,10 +239,14 @@ void DisplayTextSplash(const byte *text, int l)
 		for (i = 0; i < 160; i += 2) {
 			put_dos2ansi(text[160*x+i+2]);
 			/* TODO: If the locale is UTF-8 then translate to UTF-8 */
-			if (text[160*x+i+1] && text[160*x+i+1] < 128)
+			if (text[160*x+i+1] >= 32 && text[160*x+i+1] < 128)
 				printf("%c", text[160*x+i+1]);
-			else
-				printf(" ");
+			else {
+				up = unitmp;
+				utf8_encode(&up,unitmp+sizeof(unitmp),cp437_unicode[text[160*x+i+1]]);
+				*up = 0;
+				printf("%s",unitmp);
+			}
 		}
 		printf("%c[m", 27);
 		printf("\n");

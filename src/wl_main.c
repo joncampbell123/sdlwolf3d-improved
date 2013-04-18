@@ -230,7 +230,7 @@ static void SetDefaults()
 
 	SD_SetMusicMode(smm_AdLib);
 	SD_SetSoundMode(sdm_AdLib);
-	SD_SetDigiDevice(sds_SoundBlaster);
+	SD_SetDigiDevice(sds_SDL_Audio);
 }
 
 int ReadConfig()
@@ -1041,9 +1041,6 @@ void DoJukebox()
 	unsigned start;
 
 	IN_ClearKeysDown();
-	if (!AdLibPresent && !SoundBlasterPresent)
-		return;
-	
 	MenuFadeOut();
 
 #if !defined(SPEAR) || !defined(UPLOAD)

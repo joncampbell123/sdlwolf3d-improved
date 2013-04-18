@@ -2,16 +2,14 @@
 
 #include <pthread.h>
 #include <sys/ioctl.h>
-#include <sys/soundcard.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
 
-/* TODO: this code is seriously braindead.  Needs to be rewritten.
-   Debug adlib sound issue with intel compiler
- */
-                     
+#include <SDL.h>
+#include <SDL_audio.h>
+
 #include "fmopl.h"
 
 #define PACKED __attribute__((packed))
@@ -45,12 +43,12 @@ typedef	struct {
 typedef	struct {
 	word length, values[1];
 } PACKED MusicGroup;
-
-boolean AdLibPresent, SoundBlasterPresent;
 	
 SDMode SoundMode;
 SMMode MusicMode;
 SDSMode DigiMode;
+
+static SDL_AudioSpec sdl_audiofmt;
 
 static volatile boolean sqActive;
 
@@ -69,7 +67,6 @@ unsigned char EnableVolumeByDistance = 1;
  *       mediocre quality of the digitized samples */
 
 static volatile boolean SD_Started = 0;
-static volatile int audiofd = -1;
 
 typedef struct SoundPlaybackState {
 	byte*		data;		/* must remain valid until sound thread is finished! */
@@ -210,45 +207,52 @@ static FM_OPL *OPL;
 
 static MusicGroup *Music;
 static volatile int NewMusic;
+static int MusicLength = 0;
+static int MusicCount = 0;
+static word *MusicData = NULL;
 
 static volatile int NewAdlib;
 static volatile int AdlibPlaying;
-
-static pthread_t hSoundThread = -1;
-static pthread_mutex_t hSoundThreadMutex = PTHREAD_MUTEX_INITIALIZER;
+static AdLibSound *AdlibSnd;
+static byte AdlibBlock = 0;
+static byte *AdlibData = NULL;
+static int AdlibLength = -1;
 
 static int CurDigi;
 static int CurAdlib;
 
 static short int sndbuf[512];
 static short int musbuf[256];
+static size_t sndbuf_out=0;
+static unsigned char sndbuf_ready=0;
 
-static void *SoundThread(void *data)
-{
-	int i;
-	int MusicLength = 0;
-	int MusicCount = 0;
-	word *MusicData = NULL;
-	word dat;
+void sdl_audio_callback(void *unused,unsigned char *stream,int len) {
+	int16_t *out;
+	size_t i;
 	
-	AdLibSound *AdlibSnd;
-	byte AdlibBlock = 0;
-	byte *AdlibData = NULL;
-	int AdlibLength = -1;
-	Instrument *inst;
+	out = (int16_t*)stream;
+	len /= 2 * 2; /* 16-bit stereo */
 
-	OPLWrite(OPL, 0x01, 0x20); /* Set WSE=1 */
-	OPLWrite(OPL, 0x08, 0x00); /* Set CSM=0 & SEL=0 */
-
-/* Yeah, one day I'll rewrite this... */
-	
-	while (SD_Started) {
-		pthread_mutex_lock(&hSoundThreadMutex);
-		if (audiofd != -1) {
+	while (len > 0) {
+		if (sndbuf_ready) {
+			if (sndbuf_out < 512) {
+				*out++ = sndbuf[sndbuf_out++];
+				*out++ = sndbuf[sndbuf_out++];
+				len--;
+			}
+			if (sndbuf_out >= 512) {
+				sndbuf_out = 0;
+				sndbuf_ready = false;
+			}
+		}
+		else {
 			if (NewAdlib != -1) {
-				AdlibPlaying = NewAdlib;
-				AdlibSnd = (AdLibSound *)audiosegs[STARTADLIBSOUNDS+AdlibPlaying];
-				inst = (Instrument *)&AdlibSnd->inst;
+				if (SoundMode == sdm_AdLib) {
+					Instrument *inst;
+
+					AdlibPlaying = NewAdlib;
+					AdlibSnd = (AdLibSound *)audiosegs[STARTADLIBSOUNDS+AdlibPlaying];
+					inst = (Instrument *)&AdlibSnd->inst;
 #define alChar		0x20
 #define alScale		0x40
 #define alAttack	0x60
@@ -256,105 +260,127 @@ static void *SoundThread(void *data)
 #define alFeedCon	0xC0
 #define alWave		0xE0
 
-				OPLWrite(OPL, 0 + alChar, 0);
-				OPLWrite(OPL, 0 + alScale, 0);
-				OPLWrite(OPL, 0 + alAttack, 0);
-				OPLWrite(OPL, 0 + alSus, 0);
-				OPLWrite(OPL, 0 + alWave, 0);
-				OPLWrite(OPL, 3 + alChar, 0);
-				OPLWrite(OPL, 3 + alScale, 0);
-				OPLWrite(OPL, 3 + alAttack, 0);
-				OPLWrite(OPL, 3 + alSus, 0);
-				OPLWrite(OPL, 3 + alWave, 0);
-				OPLWrite(OPL, 0xA0, 0);
-				OPLWrite(OPL, 0xB0, 0);
-				
-				OPLWrite(OPL, 0 + alChar, inst->mChar);
-				OPLWrite(OPL, 0 + alScale, inst->mScale);
-				OPLWrite(OPL, 0 + alAttack, inst->mAttack);
-				OPLWrite(OPL, 0 + alSus, inst->mSus);
-				OPLWrite(OPL, 0 + alWave, inst->mWave);
-				OPLWrite(OPL, 3 + alChar, inst->cChar);
-				OPLWrite(OPL, 3 + alScale, inst->cScale);
-				OPLWrite(OPL, 3 + alAttack, inst->cAttack);
-				OPLWrite(OPL, 3 + alSus, inst->cSus);
-				OPLWrite(OPL, 3 + alWave, inst->cWave);
+					OPLWrite(OPL, 0 + alChar, 0);
+					OPLWrite(OPL, 0 + alScale, 0);
+					OPLWrite(OPL, 0 + alAttack, 0);
+					OPLWrite(OPL, 0 + alSus, 0);
+					OPLWrite(OPL, 0 + alWave, 0);
+					OPLWrite(OPL, 3 + alChar, 0);
+					OPLWrite(OPL, 3 + alScale, 0);
+					OPLWrite(OPL, 3 + alAttack, 0);
+					OPLWrite(OPL, 3 + alSus, 0);
+					OPLWrite(OPL, 3 + alWave, 0);
+					OPLWrite(OPL, 0xA0, 0);
+					OPLWrite(OPL, 0xB0, 0);
 
-				/*OPLWrite(OPL, alFeedCon, inst->nConn);*/
-				OPLWrite(OPL, alFeedCon, 0);
-				
-				AdlibBlock = ((AdlibSnd->block & 7) << 2) | 0x20;
-				AdlibData = (byte *)&AdlibSnd->data;
-				AdlibLength = AdlibSnd->common.length*5 - 1;
-				OPLWrite(OPL, 0xB0, AdlibBlock);
+					OPLWrite(OPL, 0 + alChar, inst->mChar);
+					OPLWrite(OPL, 0 + alScale, inst->mScale);
+					OPLWrite(OPL, 0 + alAttack, inst->mAttack);
+					OPLWrite(OPL, 0 + alSus, inst->mSus);
+					OPLWrite(OPL, 0 + alWave, inst->mWave);
+					OPLWrite(OPL, 3 + alChar, inst->cChar);
+					OPLWrite(OPL, 3 + alScale, inst->cScale);
+					OPLWrite(OPL, 3 + alAttack, inst->cAttack);
+					OPLWrite(OPL, 3 + alSus, inst->cSus);
+					OPLWrite(OPL, 3 + alWave, inst->cWave);
+
+					/*OPLWrite(OPL, alFeedCon, inst->nConn);*/
+					OPLWrite(OPL, alFeedCon, 0);
+
+					AdlibBlock = ((AdlibSnd->block & 7) << 2) | 0x20;
+					AdlibData = (byte *)&AdlibSnd->data;
+					AdlibLength = AdlibSnd->common.length*5 - 1;
+					OPLWrite(OPL, 0xB0, AdlibBlock);
+				}
+				else {
+					AdlibData = NULL;
+					AdlibLength = 0;
+					AdlibPlaying = -1;
+					AdlibSnd = NULL;
+				}
+
 				NewAdlib = -1;
 			}
 			if (NewMusic != -1) {
 				NewMusic = -1;
-				MusicLength = Music->length;
-				MusicData = Music->values;
-				MusicCount = 0;
-			}
-			for (i = 0; i < 4; i++) {
-				if (sqActive) {
-					while (MusicCount <= 0) {
-						/* JMC HACK: Either this code is off by 16 bytes or Wolfenstein 3D music blocks
-						 *           have 16 bytes of junk at the end. On most music, the end data will
-						 *           cause this code to write 0x00 to register 0x01, forcing all voices
-						 *           to the sine wave and making the Adlib sound effects sound wrong
-						 *           right after the music loops */
-						dat = *MusicData++;
-						MusicCount = *MusicData++;
-						MusicLength -= 4;
-						if (dat == 0 || (dat&0xFF) == 0x01) {
-							/* no writing to WSE and test register or to register zero! */
-						}
-						else {
-							OPLWrite(OPL, dat & 0xFF, dat >> 8);
-						}
-					}
-					if (MusicLength <= 0) {
-						NewMusic = 1;
-					}
-					MusicCount--;
+				if (MusicMode == smm_AdLib && Music != NULL) {
+					MusicLength = Music->length;
+					MusicData = Music->values;
+					MusicCount = 0;
 				}
-
-				if (AdlibPlaying != -1) {
-					if (AdlibLength <= -1) {
-						OPLWrite(OPL, 0xA0, 00);
-						OPLWrite(OPL, 0xB0, AdlibBlock & (~0x20));
-						AdlibPlaying = -1;
-					} else if ((AdlibLength % 5) == 4) {
-						/* JMC HACK: I dunno what the programmer was doing with AdlibBlock & ~2,
-						 *           that would only cut the F-number range in half, right?
-						 *
-						 *           I noticed that *AdlibData actually tends to vary to and from
-						 *           zero. When I added this code, the Adlib sound effects rendered
-						 *           correctly instead of sounding incomplete. Perhaps the OPL2
-						 *           chipset considers F-Number == 0 the same as clearing the KEY bit? */
-						OPLWrite(OPL, 0xA0, *AdlibData);
-						OPLWrite(OPL, 0xB0, AdlibBlock & ~(*AdlibData == 0 ? 0x20/*KEY*/ : 0x00));
-						AdlibData++;
-					}
-					AdlibLength--;
+				else {
+					MusicLength = 0;
+					MusicData = NULL;
+					MusicCount = 0;
 				}
-
-				YM3812UpdateOne(OPL, &musbuf[i*64], 64);
 			}
 
-			for (i = 0; i < (sizeof(sndbuf)/sizeof(sndbuf[0])); i += 2)
-				sndbuf[i+0] = sndbuf[i+1] = musbuf[i>>1U];
+			if (MusicMode == smm_AdLib || SoundMode == sdm_AdLib) {
+				for (i = 0; i < 4; i++) {
+					if (sqActive && MusicLength >= 4) {
+						while (MusicCount <= 0) {
+							word dat;
 
-			SoundFxCh_OneBlock(&SoundFxCh,sndbuf,sizeof(sndbuf)/(sizeof(sndbuf[0])*2));
-			if (multiple_fx) for (i=0;i < MAX_ALT_FX;i++) SoundFxCh_OneBlock(&SoundFxAlt[i],sndbuf,sizeof(sndbuf)/(sizeof(sndbuf[0])*2));
-			pthread_mutex_unlock(&hSoundThreadMutex);
-			write(audiofd, sndbuf, sizeof(sndbuf));
-		}
-		else {
-			pthread_mutex_unlock(&hSoundThreadMutex);
+							/* JMC HACK: Either this code is off by 16 bytes or Wolfenstein 3D music blocks
+							 *           have 16 bytes of junk at the end. On most music, the end data will
+							 *           cause this code to write 0x00 to register 0x01, forcing all voices
+							 *           to the sine wave and making the Adlib sound effects sound wrong
+							 *           right after the music loops */
+							dat = *MusicData++;
+							MusicCount = *MusicData++;
+							MusicLength -= 4;
+							if (dat == 0 || (dat&0xFF) == 0x01) {
+								/* no writing to WSE and test register or to register zero! */
+							}
+							else {
+								OPLWrite(OPL, dat & 0xFF, dat >> 8);
+							}
+						}
+						if (MusicLength <= 0) {
+							NewMusic = 1;
+						}
+						MusicCount--;
+					}
+
+					if (AdlibPlaying != -1 && AdlibData != NULL) {
+						if (AdlibLength <= -1) {
+							OPLWrite(OPL, 0xA0, 00);
+							OPLWrite(OPL, 0xB0, AdlibBlock & (~0x20));
+							AdlibPlaying = -1;
+						} else if ((AdlibLength % 5) == 4) {
+							/* JMC HACK: I dunno what the programmer was doing with AdlibBlock & ~2,
+							 *           that would only cut the F-number range in half, right?
+							 *
+							 *           I noticed that *AdlibData actually tends to vary to and from
+							 *           zero. When I added this code, the Adlib sound effects rendered
+							 *           correctly instead of sounding incomplete. Perhaps the OPL2
+							 *           chipset considers F-Number == 0 the same as clearing the KEY bit? */
+							OPLWrite(OPL, 0xA0, *AdlibData);
+							OPLWrite(OPL, 0xB0, AdlibBlock & ~(*AdlibData == 0 ? 0x20/*KEY*/ : 0x00));
+							AdlibData++;
+						}
+						AdlibLength--;
+					}
+
+					YM3812UpdateOne(OPL, &musbuf[i*64], 64);
+				}
+
+				for (i = 0; i < (sizeof(sndbuf)/sizeof(sndbuf[0])); i += 2)
+					sndbuf[i+0] = sndbuf[i+1] = musbuf[i>>1U];
+			}
+			else {
+				memset(sndbuf,0,sizeof(sndbuf));
+			}
+
+			if (DigiMode == sds_SDL_Audio) {
+				SoundFxCh_OneBlock(&SoundFxCh,sndbuf,sizeof(sndbuf)/(sizeof(sndbuf[0])*2));
+				if (multiple_fx) for (i=0;i < MAX_ALT_FX;i++) SoundFxCh_OneBlock(&SoundFxAlt[i],sndbuf,sizeof(sndbuf)/(sizeof(sndbuf[0])*2));
+			}
+
+			sndbuf_ready = 1;
+			sndbuf_out = 0;
 		}
 	}
-	return NULL;
 }
 
 static void Blah()
@@ -381,8 +407,7 @@ static void Blah()
 
 void SD_Startup()
 {
-	audio_buf_info info;
-	int want, set;
+	size_t i;
 	
 	if (SD_Started)
 		return;
@@ -391,73 +416,29 @@ void SD_Startup()
 	SoundFxCh.active = -1;
 
 	memset(&SoundFxAlt,0,sizeof(SoundFxAlt));
-	for (want=0;want < MAX_ALT_FX;want++) SoundFxAlt[want].active = -1;
+	for (i=0;i < MAX_ALT_FX;i++) SoundFxAlt[i].active = -1;
 
 	Blah();
 	
 	InitDigiMap();
 	
 	OPL = OPLCreate(OPL_TYPE_YM3812, 3579545, 44100);
-	
-	audiofd = open("/dev/dsp", O_WRONLY);
-	if (audiofd == -1) {
-		perror("open(\"/dev/dsp\")");
+
+	OPLWrite(OPL, 0x01, 0x20); /* Set WSE=1 */
+	OPLWrite(OPL, 0x08, 0x00); /* Set CSM=0 & SEL=0 */
+
+	sdl_audiofmt.freq = 44100;
+	sdl_audiofmt.format = AUDIO_S16;
+	sdl_audiofmt.channels = 2;
+	sdl_audiofmt.samples = 512;
+	sdl_audiofmt.callback = sdl_audio_callback;
+	if (SDL_OpenAudio(&sdl_audiofmt,NULL) < 0) {
+		fprintf(stderr,"SDL unable to open audio\n");
 		SD_Shutdown();
 		return;
 	}
 
-	set = (8 << 16) | 10;
-	if (ioctl(audiofd, SNDCTL_DSP_SETFRAGMENT, &set) == -1) {
-		perror("ioctl SNDCTL_DSP_SETFRAGMENT");
-		SD_Shutdown();
-		return;
-	}
-
-	want = set = AFMT_S16_LE;
-	if (ioctl(audiofd, SNDCTL_DSP_SETFMT, &set) == -1) {
-		perror("ioctl SNDCTL_DSP_SETFMT");
-		SD_Shutdown();
-		return;
-	}
-	if (want != set) {
-		fprintf(stderr, "Format: Wanted %d, Got %d\n", want, set);
-		SD_Shutdown();
-		return;
-	}
-
-	want = set = 1;
-	if (ioctl(audiofd, SNDCTL_DSP_STEREO, &set) == -1) {
-		perror("ioctl SNDCTL_DSP_STEREO");
-		SD_Shutdown();
-		return;
-	}
-	if (want != set) {
-		fprintf(stderr, "Stereo: Wanted %d, Got %d\n", want, set);
-		SD_Shutdown();
-		return;
-	}
-
-	want = set = 44100;
-	if (ioctl(audiofd, SNDCTL_DSP_SPEED, &set) == -1) {
-		perror("ioctl SNDCTL_DSP_SPEED");
-		SD_Shutdown();
-		return;
-	}
-	if (want != set) {
-		fprintf(stderr, "Speed: Wanted %d, Got %d\n", want, set);
-		SD_Shutdown();
-		return;
-	}
-
-	if (ioctl(audiofd, SNDCTL_DSP_GETOSPACE, &info) == -1) {
-		perror("ioctl SNDCTL_DSP_GETOSPACE");
-		SD_Shutdown();
-		return;
-	}
-	printf("Fragments: %d\n", info.fragments);
-	printf("FragTotal: %d\n", info.fragstotal);
-	printf("Frag Size: %d\n", info.fragsize);
-	printf("Bytes    : %d\n", info.bytes);
+	SDL_PauseAudio(0);
 
 	CurDigi = -1;
 	CurAdlib = -1;
@@ -467,12 +448,6 @@ void SD_Startup()
 	sqActive = false;
 
 	SD_Started = true;
-
-	if (pthread_create(&hSoundThread, NULL, SoundThread, NULL) != 0) {
-		perror("pthread_create");
-		SD_Shutdown();
-		return;
-	}
 }
 
 /* Jonathan C: The idea is the main loop (or event loop where it matters) will call this
@@ -482,32 +457,24 @@ void SD_Startup()
 void SD_Idle() {
 	unsigned int i;
 
-	pthread_mutex_lock(&hSoundThreadMutex);
 	SoundFxCh_Idle(&SoundFxCh);
 	if (multiple_fx) for (i=0;i < MAX_ALT_FX;i++) SoundFxCh_Idle(&SoundFxAlt[i]);
-	pthread_mutex_unlock(&hSoundThreadMutex);
 }
 
 void SD_Shutdown()
 {
-	fprintf(stderr,"SD_Shutdown() SD_Started=%u\n",SD_Started);
 	if (SD_Started) {
-		fprintf(stderr,"SD_Shutdown() in progress\n");
 		SD_MusicOff();
 		SD_StopSound();
 		SD_Started = false;
 	}
 
-	/* unlike the original codebase, wait for the thread to stop */
-	if (hSoundThread != -1) {
-		pthread_join(hSoundThread,NULL);
-		hSoundThread = -1;
-	}
+	SDL_PauseAudio(1);
+	SDL_CloseAudio();
 
 	if (OPL != NULL) OPLDestroy(OPL);
 	OPL = NULL;
-	if (audiofd != -1) close(audiofd);
-	audiofd = -1;
+
 	MM_FreePtr((memptr*)(&DigiList));
 }
 
@@ -522,12 +489,12 @@ boolean SD_PlaySound(soundnames sound)
 	
 	s = (SoundCommon *)audiosegs[STARTADLIBSOUNDS + sound];
 
-	pthread_mutex_lock(&hSoundThreadMutex);
-	if (DigiMap[sound] != -1) {
+	SDL_LockAudio();
+	if (DigiMap[sound] != -1 && DigiMode == sds_SDL_Audio) {
 		if (SoundFxCh.active < 0 || (!multiple_fx && s->priority >= SoundFxCh.priority)) {
 			SoundFxCh_ReInit(&SoundFxCh);
 			SoundFxCh_BeginStreamingPages(&SoundFxCh,sound);
-			pthread_mutex_unlock(&hSoundThreadMutex);
+			SDL_UnlockAudio();
 			return true;
 		}
 
@@ -538,7 +505,7 @@ boolean SD_PlaySound(soundnames sound)
 				if (SoundFxAlt[i].active < 0) {
 					SoundFxCh_ReInit(&SoundFxAlt[i]);
 					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
-					pthread_mutex_unlock(&hSoundThreadMutex);
+					SDL_UnlockAudio();
 					return true;
 				}
 			}
@@ -547,24 +514,29 @@ boolean SD_PlaySound(soundnames sound)
 				if (SoundFxAlt[i].active < 0 || s->priority >= SoundFxAlt[i].priority) {
 					SoundFxCh_ReInit(&SoundFxAlt[i]);
 					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
-					pthread_mutex_unlock(&hSoundThreadMutex);
+					SDL_UnlockAudio();
 					return true;
 				}
 			}
 		}
 
-		pthread_mutex_unlock(&hSoundThreadMutex);
+		SDL_UnlockAudio();
 		return false;
 	}
-	
+	else if (DigiMap[sound] != -1 && DigiMode != sds_AdLib) {
+		SDL_UnlockAudio();
+		return false;
+	}
+
 	if ((AdlibPlaying == -1) || (CurAdlib == -1) || 
-	(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
+		(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
 		CurAdlib = sound;
 		NewAdlib = sound;
-		pthread_mutex_unlock(&hSoundThreadMutex);
+		SDL_UnlockAudio();
 		return true;
 	}
-	pthread_mutex_unlock(&hSoundThreadMutex);
+
+	SDL_UnlockAudio();
 	return false;
 }
 
@@ -576,27 +548,33 @@ boolean SD_PlaySound(soundnames sound)
 //////////////////////////////////////////////////////////////////////// */
 word SD_SoundPlaying()
 {
-	pthread_mutex_lock(&hSoundThreadMutex);
-	if (SoundFxCh.soundname != -1 && SoundFxCh.active >= 0) {
-		pthread_mutex_unlock(&hSoundThreadMutex);
-		return SoundFxCh.soundname;
-	}
+	SDL_LockAudio();
 
-	if (multiple_fx) {
-		unsigned int i;
-		for (i=0;i < MAX_ALT_FX;i++) {
-			if (SoundFxAlt[i].active >= 0 && SoundFxAlt[i].soundname != -1) {
-				pthread_mutex_unlock(&hSoundThreadMutex);
-				return SoundFxCh.soundname;
+	if (DigiMode == sds_SDL_Audio) {
+		if (SoundFxCh.soundname != -1 && SoundFxCh.active >= 0) {
+			SDL_UnlockAudio();
+			return SoundFxCh.soundname;
+		}
+
+		if (multiple_fx) {
+			unsigned int i;
+			for (i=0;i < MAX_ALT_FX;i++) {
+				if (SoundFxAlt[i].active >= 0 && SoundFxAlt[i].soundname != -1) {
+					SDL_UnlockAudio();
+					return SoundFxCh.soundname;
+				}
 			}
 		}
 	}
 
-	if (AdlibPlaying != -1) {
-		pthread_mutex_unlock(&hSoundThreadMutex);
-		return CurAdlib;
+	if (DigiMode == sds_SDL_Audio || DigiMode == sds_AdLib) {
+		if (AdlibPlaying != -1) {
+			SDL_UnlockAudio();
+			return CurAdlib;
+		}
 	}
-	pthread_mutex_unlock(&hSoundThreadMutex);
+
+	SDL_UnlockAudio();
 	return 0;
 }
 
@@ -607,9 +585,12 @@ word SD_SoundPlaying()
 //////////////////////////////////////////////////////////////////////// */
 void SD_StopSound()
 {
-	pthread_mutex_lock(&hSoundThreadMutex);
+	unsigned int i;
+
+	SDL_LockAudio();
 	SoundFxCh.active = -1;
-	pthread_mutex_unlock(&hSoundThreadMutex);
+	for (i=0;i < MAX_ALT_FX;i++) SoundFxAlt[i].active = -1;
+	SDL_UnlockAudio();
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -740,13 +721,13 @@ void PlaySoundLocGlobal(word sound, intptr_t id, fixed gx, fixed gy)
 	
 	s = (SoundCommon *)audiosegs[STARTADLIBSOUNDS + sound];
 
-	pthread_mutex_lock(&hSoundThreadMutex);
-	if (DigiMap[sound] != -1) {
+	SDL_LockAudio();
+	if (DigiMap[sound] != -1 && DigiMode == sds_SDL_Audio) {
 		if (SoundFxCh.active < 0 || (!multiple_fx && s->priority >= SoundFxCh.priority)) {
 			SoundFxCh_ReInit(&SoundFxCh);
 			SoundFxCh_SetPosition(&SoundFxCh,gx,gy);
 			SoundFxCh_BeginStreamingPages(&SoundFxCh,sound);
-			pthread_mutex_unlock(&hSoundThreadMutex);
+			SDL_UnlockAudio();
 			return;
 		}
 
@@ -758,7 +739,7 @@ void PlaySoundLocGlobal(word sound, intptr_t id, fixed gx, fixed gy)
 					SoundFxCh_ReInit(&SoundFxAlt[i]);
 					SoundFxCh_SetPosition(&SoundFxAlt[i],gx,gy);
 					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
-					pthread_mutex_unlock(&hSoundThreadMutex);
+					SDL_UnlockAudio();
 					return;
 				}
 			}
@@ -768,29 +749,34 @@ void PlaySoundLocGlobal(word sound, intptr_t id, fixed gx, fixed gy)
 					SoundFxCh_ReInit(&SoundFxAlt[i]);
 					SoundFxCh_SetPosition(&SoundFxAlt[i],gx,gy);
 					SoundFxCh_BeginStreamingPages(&SoundFxAlt[i],sound);
-					pthread_mutex_unlock(&hSoundThreadMutex);
+					SDL_UnlockAudio();
 					return;
 				}
 			}
 		}
 
-		pthread_mutex_unlock(&hSoundThreadMutex);
+		SDL_UnlockAudio();
 		return;
 	}
-	
+	else if (DigiMap[sound] != -1 && DigiMode != sds_AdLib) {
+		SDL_UnlockAudio();
+		return;
+	}
+
 	if ((AdlibPlaying == -1) || (CurAdlib == -1) || 
-	(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
+			(s->priority >= ((SoundCommon *)audiosegs[STARTADLIBSOUNDS+CurAdlib])->priority) ) {
 		CurAdlib = sound;
 		NewAdlib = sound;
-		pthread_mutex_unlock(&hSoundThreadMutex);
+		SDL_UnlockAudio();
 		return;
 	}
-	pthread_mutex_unlock(&hSoundThreadMutex);
+
+	SDL_UnlockAudio();
 }
 
 void UpdateSoundLoc(fixed x, fixed y, int angle)
 {
-	pthread_mutex_lock(&hSoundThreadMutex);
+	SDL_LockAudio();
 	if (SoundFxCh.active >= 0 && SoundFxCh.positional)
 		SoundFxCh_UpdatePosition(&SoundFxCh);
 
@@ -802,7 +788,7 @@ void UpdateSoundLoc(fixed x, fixed y, int angle)
 		}
 	}
 
-	pthread_mutex_unlock(&hSoundThreadMutex);
+	SDL_UnlockAudio();
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -815,9 +801,9 @@ void SD_MusicOn()
 	/* NTS: This is only called from SD_StartMusic or the "music pause" function in wl_menu.c
 	 *      which obviously means the iD developers meant it to start/stop but not restart
 	 *      the song */
-	pthread_mutex_lock(&hSoundThreadMutex);
+	SDL_LockAudio();
 	sqActive = true;
-	pthread_mutex_unlock(&hSoundThreadMutex);
+	SDL_UnlockAudio();
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -827,9 +813,9 @@ void SD_MusicOn()
 //////////////////////////////////////////////////////////////////////// */
 void SD_MusicOff()
 {
-	pthread_mutex_lock(&hSoundThreadMutex);
+	SDL_LockAudio();
 	sqActive = false;
-	pthread_mutex_unlock(&hSoundThreadMutex);
+	SDL_UnlockAudio();
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -846,14 +832,14 @@ void SD_StartMusic(int music)
 	SD_MusicOff();
 	SD_MusicOn();
 
-	pthread_mutex_lock(&hSoundThreadMutex);
+	SDL_LockAudio();
 	Music = (MusicGroup *)audiosegs[music];
 	NewMusic = 1;
-	pthread_mutex_unlock(&hSoundThreadMutex);
+	SDL_UnlockAudio();
 }
 
 void SD_SetMultipleFxMode(unsigned char on) {
-	pthread_mutex_lock(&hSoundThreadMutex);
+	SDL_LockAudio();
 
 	if (on != multiple_fx) {
 		unsigned int i;
@@ -863,11 +849,15 @@ void SD_SetMultipleFxMode(unsigned char on) {
 		multiple_fx = on;
 	}
 
-	pthread_mutex_unlock(&hSoundThreadMutex);
+	SDL_UnlockAudio();
 }
 
 void SD_SetDigiDevice(SDSMode mode)
 {
+	if (DigiMode != mode) {
+		SD_StopSound();
+		DigiMode = mode;
+	}
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -875,9 +865,18 @@ void SD_SetDigiDevice(SDSMode mode)
 //	SD_SetSoundMode() - Sets which sound hardware to use for sound effects
 //
 //////////////////////////////////////////////////////////////////////// */
-boolean SD_SetSoundMode(SDMode mode)
+void SD_SetSoundMode(SDMode mode)
 {
-	return false;
+	if (SoundMode != mode) {
+		SDL_LockAudio();
+		NewAdlib = -1;
+		AdlibPlaying = -1;
+		OPLWrite(OPL, 0xA0, 0x00);
+		OPLWrite(OPL, 0xB0, 0x00);
+		SDL_UnlockAudio();
+
+		SoundMode = mode;
+	}
 }
 
 /*/////////////////////////////////////////////////////////////////////////
@@ -885,7 +884,25 @@ boolean SD_SetSoundMode(SDMode mode)
 //	SD_SetMusicMode() - sets the device to use for background music
 //
 //////////////////////////////////////////////////////////////////////// */
-boolean SD_SetMusicMode(SMMode mode)
+void SD_SetMusicMode(SMMode mode)
 {
-	return false;
+	size_t i;
+
+	if (MusicMode != mode) {
+		SD_MusicOff();
+		SD_MusicOn();
+
+		SDL_LockAudio();
+		NewMusic = 1;
+
+		/* reset the OPL "chip" (except channel 0 which is SFX) */
+		for (i=1;i <= 8;i++) {
+			OPLWrite(OPL, 0xA0+i, 0x00);
+			OPLWrite(OPL, 0xB0+i, 0x00);
+		}
+
+		SDL_UnlockAudio();
+
+		MusicMode = mode;
+	}
 }

@@ -5,16 +5,17 @@
 
 typedef	enum	{
 					sdm_Off,
-					sdm_PC,sdm_AdLib
+					sdm_AdLib
 				}	SDMode;
 typedef	enum	{
-					smm_Off,smm_AdLib
+					smm_Off,
+					smm_AdLib
 				}	SMMode;
 typedef	enum	{
-					sds_Off,sds_PC,sds_SoundBlaster
+					sds_Off,
+					sds_AdLib,
+					sds_SDL_Audio
 				}	SDSMode;
-
-extern boolean AdLibPresent, SoundBlasterPresent;
 
 extern	SDMode		SoundMode;
 extern	SDSMode		DigiMode;
@@ -31,7 +32,7 @@ extern void SD_StopSound(),
 				SD_MusicOn(),
 				SD_MusicOff();
 
-extern boolean SD_SetSoundMode(SDMode mode), SD_SetMusicMode(SMMode mode);
+extern void SD_SetSoundMode(SDMode mode), SD_SetMusicMode(SMMode mode);
 		
 extern word SD_SoundPlaying();
 

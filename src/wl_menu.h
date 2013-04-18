@@ -54,9 +54,9 @@
 #define SM_X	48
 #define SM_W	250
 
-#define SM_Y1	20
-#define SM_H1	4*13-7
-#define SM_Y2	SM_Y1+5*13
+#define SM_Y1	20+(13/2)
+#define SM_H1	3*13-7
+#define SM_Y2	SM_Y1+4*13
 #define SM_H2	4*13-7
 #define SM_Y3	SM_Y2+5*13
 #define SM_H3	3*13-7

@@ -5,6 +5,7 @@
 //
 ///////////////////////////////////////////////////////////////// */
 #include "wl_def.h"
+#include "sd_comm.h"
 
 /*
 // PRIVATE PROTOTYPES
@@ -39,7 +40,7 @@ CP_iteminfo
 #else
 	MainItems={MENU_X,MENU_Y, 9,STARTITEM,24},
 #endif
-	SndItems={SM_X,SM_Y1,12,0,52},
+	SndItems={SM_X,SM_Y1,11,0,52},
 	LSItems={LSM_X,LSM_Y,10,0,24},
 	CtlItems={CTL_X,CTL_Y,6,-1,56},
 	CusItems={8,CST_Y+13*2,9,-1,0},
@@ -65,18 +66,20 @@ MainMenu[]=
 
 SndMenu[]=
 {
-	{1,"This menu is",0},
-	{1,"pointless",0},
-	{1,STR_ALSB,0},
+	/* Sound effects */
+	{1,"None",},
+	{1,"SDL audio (OPL emu)",},
 	{0,"",0},
 	{0,"",0},
-	{1,STR_NONE,0},
-	{1,STR_DISNEY,0},
-	{1,STR_SB,0},
+	/* Digititized sound */
+	{1,"None",},
+	{1,"SDL audio (OPL emu)",},
+	{1,"SDL audio",},
 	{0,"",0},
 	{0,"",0},
-	{1,STR_NONE,0},
-	{1,STR_ALSB,0}
+	/* Music */
+	{1,"None",},
+	{1,"SDL audio (OPL emu)",}
 },
 
 CtlMenu[]=
@@ -889,6 +892,45 @@ void CP_Sound()
 	do
 	{
 		which=HandleMenu(&SndItems,&SndMenu[0],NULL);
+
+		switch (which) {
+			case 0:		/* Sound Mode: None */
+				SD_SetSoundMode(sdm_Off);
+				DrawSoundMenu();
+				break;
+			case 1:		/* Sound Mode: AdLib */
+				SD_SetSoundMode(sdm_AdLib);
+				ShootSnd();
+				DrawSoundMenu();
+				break;
+
+			case 4:		/* Digi Mode: None */
+				SD_SetDigiDevice(sds_Off);
+				ShootSnd();
+				DrawSoundMenu();
+				break;
+			case 5:		/* Digi Mode: AdLib */
+				SD_SetDigiDevice(sds_AdLib);
+				ShootSnd();
+				DrawSoundMenu();
+				break;
+			case 6:		/* Digi Mode: SDL audio */
+				SD_SetDigiDevice(sds_SDL_Audio);
+				ShootSnd();
+				DrawSoundMenu();
+				break;
+
+			case 9:		/* Music Mode: None */
+				SD_SetMusicMode(smm_Off);
+				ShootSnd();
+				DrawSoundMenu();
+				break;
+			case 10:	/* Music Mode: AdLib */
+				SD_SetMusicMode(smm_AdLib);
+				ShootSnd();
+				DrawSoundMenu();
+				break;
+		}
 	} while(which>=0);
 
 	MenuFadeOut();
@@ -918,22 +960,6 @@ void DrawSoundMenu(void)
 	DrawWindow(SM_X-8,SM_Y2-3,SM_W,SM_H2,BKGDCOLOR);
 	DrawWindow(SM_X-8,SM_Y3-3,SM_W,SM_H3,BKGDCOLOR);
 
-	/*
-	// IF NO ADLIB, NON-CHOOSENESS!
-	*/
-	if (!AdLibPresent && !SoundBlasterPresent)
-	{
-		SndMenu[2].active=SndMenu[10].active=SndMenu[11].active=0;
-	}
-
-	SndMenu[6].active = 0;
-
-	if (!SoundBlasterPresent)
-		SndMenu[7].active=0;
-
-	if (!SoundBlasterPresent)
-		SndMenu[5].active=0;
-
 	DrawMenu(&SndItems,&SndMenu[0]);
 	VWB_DrawPic(100,SM_Y1-20,C_FXTITLEPIC);
 	VWB_DrawPic(100,SM_Y2-20,C_DIGITITLEPIC);
@@ -952,21 +978,20 @@ void DrawSoundMenu(void)
 				// SOUND EFFECTS
 				*/
 				case 0: if (SoundMode==sdm_Off) on=1; break;
-				case 1: if (SoundMode==sdm_PC) on=1; break;
-				case 2: if (SoundMode==sdm_AdLib) on=1; break;
+				case 1: if (SoundMode==sdm_AdLib) on=1; break;
 
 				/*
 				// DIGITIZED SOUND
 				*/
-				case 5: if (DigiMode==sds_Off) on=1; break;
-				case 6: break;
-				case 7: if (DigiMode==sds_SoundBlaster) on=1; break;
+				case 4: if (DigiMode==sds_Off) on=1; break;
+				case 5: if (DigiMode==sds_AdLib) on=1; break;
+				case 6: if (DigiMode==sds_SDL_Audio) on=1; break;
 
 				/*
 				// MUSIC
 				*/
-				case 10: if (MusicMode==smm_Off) on=1; break;
-				case 11: if (MusicMode==smm_AdLib) on=1; break;
+				case 9: if (MusicMode==smm_Off) on=1; break;
+				case 10:if (MusicMode==smm_AdLib) on=1; break;
 			}
 
 			if (on)
